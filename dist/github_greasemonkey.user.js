@@ -193,7 +193,7 @@ RepoSearch.InstanceMethods = {
       span = $(document.createElement('span')).addClass('search_text').hide();
       span.text($.trim(li.text() + ' ' + description_text).toLowerCase());
       li.append(span);
-      this.addDescription(li, description_text)
+      this.addDescription(li, description_text);
     }
   },
 
@@ -234,6 +234,7 @@ RepoSearch.InstanceMethods = {
   },
 
   performSearch: function(el) {
+    var start = new Date()
     var text = el.attr('value'), document_ul = this.repos.children('ul'), ul;
     if (text !== '') {
       var score,
@@ -243,20 +244,25 @@ RepoSearch.InstanceMethods = {
 
       ul = $(fragment.appendChild(document.createElement('ul')));
       for(var i = 0; i < lis.length; i++) {
-        score = $.trim($(lis[i]).children('.search_text').text()).score(text);
+        score = $.trim(lis[i].getElementsByClassName('search_text')[0].innerHTML).score(text);
         scores.push([score, i]);
       }
       scores = scores.sort().reverse();
       for(var i = 0; i < scores.length; i++) {
-        li = $(lis[scores[i][1]]);
-        scores[i][0] && li.show() || li.hide();
-        ul[0].appendChild(li[0]);
+        li = lis[scores[i][1]];
+        if(scores[i][0]) {
+          li.style.display = 'none';
+        } else {
+          li.style.display = '';
+        }
+        ul[0].appendChild(li);
       }
       ul.find('div.description').show();
     } else {
       ul = $(this.original_content_fragment.childNodes[0].cloneNode(true));
     }
     document_ul.replaceWith(ul);
+    console.debug(new Date() - start);
   },
 
   loadStoredRepositories: function() {
