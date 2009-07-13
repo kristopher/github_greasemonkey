@@ -6,7 +6,8 @@ var RepoSearch = function(el) {
   this.original_content_fragment = document.createDocumentFragment();
   this.search_input_css = { 'width': '24em', 'padding': '3px 11px 0 0', 'color': this.label_color };
   this.search_div_css = { 'margin': '5px 0 10px 0' };
-  this.initialize(el);  
+  this.stored_repositories = this.loadStoredRepositories();      
+  this.initialize(el);
 }
 
 RepoSearch.InstanceMethods = {
@@ -26,15 +27,34 @@ RepoSearch.InstanceMethods = {
   },
 
   addSearchText: function() {
-    var span;
-    this.repos.children('ul').children('li').each(function(i) {
-      li = $(this);
-      span = $(document.createElement('span')).addClass('search_text').hide();
-      span.text($.trim(li.text()).toLowerCase());
-      li.append(span);
-    });
-  },
+    var span, key,
+        description_text = '',
+        lis = this.repos.children('ul').children('li');
 
+    for(var i = 0; i < lis.length; i++) {
+      li = $(lis[i]);
+      key = li.find('b > a').attr('href').replace(/(?:^\/|http:\/\/github.com\/)(.*)\/tree/, '$1')
+      if (this.stored_repositories[key]) {
+        description_text = (this.stored_repositories[key]['description'] || '');        
+      } else {
+        description_text = '';
+      }
+      span = $(document.createElement('span')).addClass('search_text').hide();
+      span.text($.trim(li.text() + ' ' + description_text).toLowerCase());
+      li.append(span);
+      this.addDescription(li, description_text)
+    }
+  },
+  
+  addDescription: function(li, description) {
+    if (description !== '') {
+      var div = $(document.createElement('div')).addClass('description').css({'border-top': '1px solid #333', 'margin-top': '5px', 'padding': '2px 5px 2px 5px'}).hide(),
+          p = $(document.createElement('p')).css({'font-size': '12px', 'color': '#333'}).text(description);
+      div.append(p);
+      li.append(div);
+    }              
+  },
+  
   attachSearchInputEvents: function(input) {
     var self = this;
     input.keyup(function(e) {
@@ -81,16 +101,22 @@ RepoSearch.InstanceMethods = {
         scores[i][0] && li.show() || li.hide();
         ul[0].appendChild(li[0]);
       }
+      ul.find('div.description').show();
     } else {
       ul = $(this.original_content_fragment.childNodes[0].cloneNode(true));
     }
     document_ul.replaceWith(ul);
-  }  
+  },
+
+  loadStoredRepositories: function() {
+    return JSON.parse(localStorage.getItem('repositories') || "{}");
+  }
 }
 
 $.extend(RepoSearch.prototype, RepoSearch.InstanceMethods);
 delete RepoSearch.InstanceMethods;
 
-$('div.repos').each(function() {
-  new RepoSearch($(this));  
-})
+for(var i = 0; i < $('div.repos').length; i++) {
+  new RepoSearch($($('div.repos')[i]), this);  
+}
+
