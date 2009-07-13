@@ -34,11 +34,11 @@ RepoSearch.InstanceMethods = {
   attachSearchInputEvents: function(input) {
     var self = this;
     input.keyup(function(e) {
-      self.preformSearch($(e.target));
+      self.performSearch($(e.target));
     })
   },
   
-  preformSearch: function(el) {        
+  performSearch: function(el) {        
     var text = el.attr('value'), document_ul = this.repos.children('ul'), ul;
     if (text !== '') {
       var score,
