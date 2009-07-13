@@ -1,6 +1,10 @@
 var RepoSearch = function(el) {
+  this.label_text = 'Search ' + el.children('h1').contents().filter(function() { 
+    return (this.nodeType === 3);
+  })[0].nodeValue;
+  this.label_color = '#666';
   this.original_content_fragment = document.createDocumentFragment();
-  this.search_input_css = { 'width': '24em', 'padding-right': '11px' };
+  this.search_input_css = { 'width': '24em', 'padding': '3px 11px 0 0', 'color': this.label_color };
   this.search_div_css = { 'margin': '5px 0 10px 0' };
   this.initialize(el);  
 }
@@ -16,9 +20,9 @@ RepoSearch.InstanceMethods = {
 
   addSearchInputs: function() {
     var div = $(document.createElement('div')).css(this.search_div_css).addClass('repo_search'),
-        input = $(document.createElement('input')).attr('type', 'text').css(this.search_input_css);
+        input = $(document.createElement('input')).attr({ 'type': 'text', 'value': this.label_text }).css(this.search_input_css);
     this.attachSearchInputEvents(input);
-    this.repos.children('h1').after(div.append(input));
+    this.repos.children('ul').before(div.append(input));
   },
 
   addSearchText: function() {
@@ -34,8 +38,28 @@ RepoSearch.InstanceMethods = {
   attachSearchInputEvents: function(input) {
     var self = this;
     input.keyup(function(e) {
-      self.performSearch($(e.target));
-    })
+      var el = $(e.target);
+      if(el.attr('value') === '') {
+        el.removeClass('dirty');
+      } else {
+        el.addClass('dirty');
+      }
+      self.performSearch($(e.target));      
+    });
+    input.blur(function(e) {
+      var el = $(e.target);
+      if(!el.hasClass('dirty')) {
+        el.attr('value', self.label_text);
+        el.css('color', self.label_color);
+      } 
+    });
+    input.focus(function(e) {
+      var el = $(e.target);
+      if(!el.hasClass('dirty')) {
+        el.attr('value', '');
+        el.css('color', '#000');
+      }
+    });
   },
   
   performSearch: function(el) {        
