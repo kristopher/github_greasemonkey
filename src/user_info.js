@@ -17,7 +17,7 @@ var UserInfo = (function() {
   }
   
   function loadStoredUsers() {
-    return (JSON.parse(localStorage.getItem('users')) || {})
+    return JSON.parse(localStorage.getItem('users')  || "{}")
   }
   
   function saveStoredUsers() {
