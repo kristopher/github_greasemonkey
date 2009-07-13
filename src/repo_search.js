@@ -30,7 +30,7 @@ RepoSearch.InstanceMethods = {
     this.repos.children('ul').children('li').each(function(i) {
       li = $(this);
       span = $(document.createElement('span')).addClass('search_text').hide();
-      span.text($.trim(li.text()));
+      span.text($.trim(li.text()).toLowerCase());
       li.append(span);
     });
   },
