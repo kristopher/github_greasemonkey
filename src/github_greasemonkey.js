@@ -1,0 +1,5 @@
+//= require "header"
+//= require "lib/jquery-1.3.2.min"
+//= require "lib/quicksilver"
+//= require "repo_search"
+//= require "analyze"
