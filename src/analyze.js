@@ -49,18 +49,18 @@ Analyze.LoggedInProfile.prototype = new Analyze;
 
 Analyze.LoggedInProfile.prototype.initialize = function() {
   this.user_box = $('.userbox');
-  this.analyze_profile_name = $('.userbox div.name a').text();
-  this.analyze_profile_path = this.analyze_base_path + '/' + this.analyze_profile_name;
-  this.addLinks();
+  if (this.user_box[0]) {
+    this.analyze_profile_name = $('.userbox div.name a').text();
+    this.analyze_profile_path = this.analyze_base_path + '/' + this.analyze_profile_name;
+    this.addLinks();
+  }
 }
 
 Analyze.LoggedInProfile.prototype.addLinks = function() {
-  if (this.user_box[0]) {
-    var link = this.createLink(this.analyze_base_path + '/' + this.analyze_profile_name);
-    this.user_box.find('div.site_links')
-      .prepend($(document.createTextNode(' | ')))
-      .prepend(link);    
-  }
+  var link = this.createLink(this.analyze_base_path + '/' + this.analyze_profile_name);
+  this.user_box.find('div.site_links')
+    .prepend($(document.createTextNode(' | ')))
+    .prepend(link);    
 }
   
 Analyze.Profile = function() {
@@ -86,26 +86,29 @@ Analyze.Profile.prototype.initialize = function() {
     'bottom': '4px'
   };
   this.button_box = $('.profile div.buttons');
-  this.repo_buttons = $('li.project > div:first-child');
-  this.analyze_profile_name = $('div.profile > div.identity > h1').text();
-  this.analyze_profile_path = this.analyze_base_path + '/' + this.analyze_profile_name;
-  this.addLinks();
+  if (this.button_box[0]) {
+    this.repo_buttons = $('li.project > div:first-child');
+    this.analyze_profile_name = $('div.profile > div.identity > h1').text();
+    this.analyze_profile_path = this.analyze_base_path + '/' + this.analyze_profile_name;
+    this.addLinks();
+  }
 }
 
 Analyze.Profile.prototype.addLinks = function() {
-  if (this.button_box[0]) {
-    var repo_name, button = this.createButton(this.analyze_profile_path).children('a').css(this.button_box_link_style).end();
-    this.button_box.append(button);
-    for(var i = 0; i < this.repo_buttons.length; i++) {
-      repo_name = $(this.repo_buttons[i]).parent().find('.title a').text();
-      button = this.createButton(this.analyze_profile_path + '/' + repo_name)
-        .css(this.repo_button_style)
-        .children('a')
-        .css(this.repo_button_link_style)
-        .end();
-      this.repo_buttons[i].appendChild(button[0])
-    }    
-  }
+  var button = this.createButton(this.analyze_profile_path).children('a').css(this.button_box_link_style).end();
+  this.button_box.append(button);
+  // TODO Decide whether to use
+  // var buttons, repo_name, repo_names = this.repo_buttons.siblings('div.title').find('a'),
+  // button = this.createButton(this.analyze_profile_path + '/')
+  //   .css(this.repo_button_style)
+  //   .children('a')
+  //   .css(this.repo_button_link_style)
+  //   .end();
+  // this.repo_buttons.append(button);
+  // buttons = this.repo_buttons.children('span.analyze').children('a');
+  // for(var i = 0; i < repo_names.length; i++) {
+  //   buttons[i].href = (buttons[i].href + repo_names[i].innerHTML);
+  // }    
 }
 
 Analyze.Repository = function() {
@@ -125,18 +128,24 @@ Analyze.Repository.prototype.initialize = function() {
   };
 
   this.repo_buttons = $('#repo_details div.title div.path');
-  this.repo_name = this.repo_buttons.find('b > a').text();
-  this.analyze_profile_name = this.repo_buttons.children('a:first').text();  
-  this.analyze_profile_path = this.analyze_base_path + '/' + this.analyze_profile_name;
-  this.addLinks();
-}
-
-Analyze.Repository.prototype.addLinks = function() {
   if(this.repo_buttons[0]) {
-    this.repo_buttons.append(this.createButton(this.analyze_profile_path + '/' + this.repo_name).css(this.repo_button_style));    
+    this.repo_name = this.repo_buttons.find('b > a').text();
+    this.analyze_profile_name = this.repo_buttons.children('a:first').text();  
+    this.analyze_profile_path = this.analyze_base_path + '/' + this.analyze_profile_name;
+    this.addLinks();
   }
 }
 
+Analyze.Repository.prototype.addLinks = function() {
+  this.repo_buttons.append(this.createButton(this.analyze_profile_path + '/' + this.repo_name).css(this.repo_button_style));    
+}
+
+var start = new Date()
 new Analyze.LoggedInProfile();
+console.debug('Analyze.LoggedInProfile: ' + (new Date - start));
+start = new Date()
 new Analyze.Profile();
-new Analyze.Repository();
+console.debug('Analyze.Profile: ' + (new Date - start));
+start = new Date()
+new Analyze.Repository();  
+console.debug('Analyze.Repository: ' + (new Date - start));
