@@ -122,8 +122,12 @@ String.prototype.score = function(abbreviation,offset) {
   return 0.0
 }
 var RepoSearch = function(el) {
+  this.label_text = 'Search ' + el.children('h1').contents().filter(function() {
+    return (this.nodeType === 3);
+  })[0].nodeValue;
+  this.label_color = '#666';
   this.original_content_fragment = document.createDocumentFragment();
-  this.search_input_css = { 'width': '24em', 'padding-right': '11px' };
+  this.search_input_css = { 'width': '24em', 'padding': '3px 11px 0 0', 'color': this.label_color };
   this.search_div_css = { 'margin': '5px 0 10px 0' };
   this.initialize(el);
 }
@@ -139,9 +143,9 @@ RepoSearch.InstanceMethods = {
 
   addSearchInputs: function() {
     var div = $(document.createElement('div')).css(this.search_div_css).addClass('repo_search'),
-        input = $(document.createElement('input')).attr('type', 'text').css(this.search_input_css);
+        input = $(document.createElement('input')).attr({ 'type': 'text', 'value': this.label_text }).css(this.search_input_css);
     this.attachSearchInputEvents(input);
-    this.repos.children('h1').after(div.append(input));
+    this.repos.children('ul').before(div.append(input));
   },
 
   addSearchText: function() {
@@ -157,11 +161,31 @@ RepoSearch.InstanceMethods = {
   attachSearchInputEvents: function(input) {
     var self = this;
     input.keyup(function(e) {
-      self.preformSearch($(e.target));
-    })
+      var el = $(e.target);
+      if(el.attr('value') === '') {
+        el.removeClass('dirty');
+      } else {
+        el.addClass('dirty');
+      }
+      self.performSearch($(e.target));
+    });
+    input.blur(function(e) {
+      var el = $(e.target);
+      if(!el.hasClass('dirty')) {
+        el.attr('value', self.label_text);
+        el.css('color', self.label_color);
+      }
+    });
+    input.focus(function(e) {
+      var el = $(e.target);
+      if(!el.hasClass('dirty')) {
+        el.attr('value', '');
+        el.css('color', '#000');
+      }
+    });
   },
 
-  preformSearch: function(el) {
+  performSearch: function(el) {
     var text = el.attr('value'), document_ul = this.repos.children('ul'), ul;
     if (text !== '') {
       var score,
@@ -244,18 +268,18 @@ Analyze.LoggedInProfile.prototype = new Analyze;
 
 Analyze.LoggedInProfile.prototype.initialize = function() {
   this.user_box = $('.userbox');
-  this.analyze_profile_name = $('.userbox div.name a').text();
-  this.analyze_profile_path = this.analyze_base_path + '/' + this.analyze_profile_name;
-  this.addLinks();
+  if (this.user_box[0]) {
+    this.analyze_profile_name = $('.userbox div.name a').text();
+    this.analyze_profile_path = this.analyze_base_path + '/' + this.analyze_profile_name;
+    this.addLinks();
+  }
 }
 
 Analyze.LoggedInProfile.prototype.addLinks = function() {
-  if (this.user_box[0]) {
-    var link = this.createLink(this.analyze_base_path + '/' + this.analyze_profile_name);
-    this.user_box.find('div.site_links')
-      .prepend($(document.createTextNode(' | ')))
-      .prepend(link);
-  }
+  var link = this.createLink(this.analyze_base_path + '/' + this.analyze_profile_name);
+  this.user_box.find('div.site_links')
+    .prepend($(document.createTextNode(' | ')))
+    .prepend(link);
 }
 
 Analyze.Profile = function() {
@@ -281,26 +305,29 @@ Analyze.Profile.prototype.initialize = function() {
     'bottom': '4px'
   };
   this.button_box = $('.profile div.buttons');
-  this.repo_buttons = $('li.project > div:first-child');
-  this.analyze_profile_name = $('div.profile > div.identity > h1').text();
-  this.analyze_profile_path = this.analyze_base_path + '/' + this.analyze_profile_name;
-  this.addLinks();
+  if (this.button_box[0]) {
+    this.repo_buttons = $('li.project > div:first-child');
+    this.analyze_profile_name = $('div.profile > div.identity > h1').text();
+    this.analyze_profile_path = this.analyze_base_path + '/' + this.analyze_profile_name;
+    this.addLinks();
+  }
 }
 
 Analyze.Profile.prototype.addLinks = function() {
-  if (this.button_box[0]) {
-    var repo_name, button = this.createButton(this.analyze_profile_path).children('a').css(this.button_box_link_style).end();
-    this.button_box.append(button);
-    for(var i = 0; i < this.repo_buttons.length; i++) {
-      repo_name = $(this.repo_buttons[i]).parent().find('.title a').text();
-      button = this.createButton(this.analyze_profile_path + '/' + repo_name)
-        .css(this.repo_button_style)
-        .children('a')
-        .css(this.repo_button_link_style)
-        .end();
-      this.repo_buttons[i].appendChild(button[0])
-    }
-  }
+  var button = this.createButton(this.analyze_profile_path).children('a').css(this.button_box_link_style).end();
+  this.button_box.append(button);
+  // TODO Decide whether to use
+  // var buttons, repo_name, repo_names = this.repo_buttons.siblings('div.title').find('a'),
+  // button = this.createButton(this.analyze_profile_path + '/')
+  //   .css(this.repo_button_style)
+  //   .children('a')
+  //   .css(this.repo_button_link_style)
+  //   .end();
+  // this.repo_buttons.append(button);
+  // buttons = this.repo_buttons.children('span.analyze').children('a');
+  // for(var i = 0; i < repo_names.length; i++) {
+  //   buttons[i].href = (buttons[i].href + repo_names[i].innerHTML);
+  // }
 }
 
 Analyze.Repository = function() {
@@ -320,18 +347,24 @@ Analyze.Repository.prototype.initialize = function() {
   };
 
   this.repo_buttons = $('#repo_details div.title div.path');
-  this.repo_name = this.repo_buttons.find('b > a').text();
-  this.analyze_profile_name = this.repo_buttons.children('a:first').text();
-  this.analyze_profile_path = this.analyze_base_path + '/' + this.analyze_profile_name;
-  this.addLinks();
-}
-
-Analyze.Repository.prototype.addLinks = function() {
   if(this.repo_buttons[0]) {
-    this.repo_buttons.append(this.createButton(this.analyze_profile_path + '/' + this.repo_name).css(this.repo_button_style));
+    this.repo_name = this.repo_buttons.find('b > a').text();
+    this.analyze_profile_name = this.repo_buttons.children('a:first').text();
+    this.analyze_profile_path = this.analyze_base_path + '/' + this.analyze_profile_name;
+    this.addLinks();
   }
 }
 
+Analyze.Repository.prototype.addLinks = function() {
+  this.repo_buttons.append(this.createButton(this.analyze_profile_path + '/' + this.repo_name).css(this.repo_button_style));
+}
+
+var start = new Date()
 new Analyze.LoggedInProfile();
+console.debug('Analyze.LoggedInProfile: ' + (new Date - start));
+start = new Date()
 new Analyze.Profile();
+console.debug('Analyze.Profile: ' + (new Date - start));
+start = new Date()
 new Analyze.Repository();
+console.debug('Analyze.Repository: ' + (new Date - start));
