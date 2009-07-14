@@ -285,7 +285,7 @@ RepoSearch.InstanceMethods = {
   },
 
   updateStoredRepositories: function() {
-    this.stored_repositories = loadStoredRepositories();
+    this.stored_repositories = this.loadStoredRepositories();
     this.updateDescriptions();
     this.updateSearchData();
   },
@@ -392,12 +392,8 @@ RepoSearch.InstanceMethods = {
       if (text = this.stored_repositories[property]['description']) {
         li = ul.children('li.' + property.replace(/\//, '_'));
         if (li[0]) {
-          description = li.children('div.description');
-          if (decription[0]) {
-            decription.text(text);
-          } else {
-            this.addDescription(li, text);
-          }
+          li.children('div.description').remove();
+          this.addDescription(li, text);
         }
       }
     }
@@ -781,8 +777,8 @@ var Info = function() {
 RepoInfo.onFinishedLoading(function() {
   UserInfo.init();
   if (this.updated) {
-    JQuery.each(RepoSearch.instances, function() {
-      this.updateStoreRepositories();
+    $.each(RepoSearch.instances, function(i) {
+      this.updateStoredRepositories();
     })
   }
 })
