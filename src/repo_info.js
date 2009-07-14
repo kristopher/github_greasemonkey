@@ -30,6 +30,7 @@ var RepoInfo = (function() {
   
   function getAndStoreReposData(repos) {
     if (repos.length > 0) {
+      this.updated = true;
       getAndStoreRepoData(repos.pop())
       setTimeout(function() {
         getAndStoreReposData(repos);
@@ -63,7 +64,7 @@ var RepoInfo = (function() {
   function runFinishedLoadingCallbacks() {
     for(var i = 0; i < on_finished_loading.length; i++) {
       try {
-        on_finished_loading[i].call(window);
+        on_finished_loading[i].call(this);
       } catch(e) {
         console && console.error(e.message);
       }
