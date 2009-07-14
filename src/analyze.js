@@ -140,12 +140,6 @@ Analyze.Repository.prototype.addLinks = function() {
   this.repo_buttons.append(this.createButton(this.analyze_profile_path + '/' + this.repo_name).css(this.repo_button_style));    
 }
 
-var start = new Date()
 new Analyze.LoggedInProfile();
-console.debug('Analyze.LoggedInProfile: ' + (new Date - start));
-start = new Date()
 new Analyze.Profile();
-console.debug('Analyze.Profile: ' + (new Date - start));
-start = new Date()
 new Analyze.Repository();  
-console.debug('Analyze.Repository: ' + (new Date - start));
