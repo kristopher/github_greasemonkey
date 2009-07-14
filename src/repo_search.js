@@ -20,27 +20,32 @@ RepoSearch.InstanceMethods = {
   },
 
   addSearchInputs: function() {
-    var div = $(document.createElement('div')).css(this.search_div_css).addClass('repo_search'),
-        input = $(document.createElement('input')).attr({ 'type': 'text', 'value': this.label_text }).css(this.search_input_css);
+    var div = $(document.createElement('div'))
+          .css(this.search_div_css).addClass('repo_search');
+
+    var input = $(document.createElement('input'))
+          .attr({ 'type': 'text', 'value': this.label_text })
+          .css(this.search_input_css);
+    div.append(input);      
     this.attachSearchInputEvents(input);
-    this.repos.children('ul').before(div.append(input));
+    this.repos.children('ul').before(div);
   },
 
   addSearchText: function() {
-    var span, key,
-        description_text = '',
+    var span, key, description_text,
         lis = this.repos.children('ul').children('li');
 
     for(var i = 0; i < lis.length; i++) {
+      description_text = '';
       li = $(lis[i]);
       key = li.find('b > a').attr('href').replace(/(?:^\/|http:\/\/github.com\/)(.*)\/tree/, '$1')
       if (this.stored_repositories[key]) {
-        description_text = (this.stored_repositories[key]['description'] || '');        
-      } else {
-        description_text = '';
+        description_text = (this.stored_repositories[key]['description'] || '');
       }
-      span = $(document.createElement('span')).addClass('search_text').hide();
-      span.text($.trim(li.text() + ' ' + description_text).toLowerCase());
+      span = $(document.createElement('span'))
+        .addClass('search_text')
+        .hide()
+        .text((key + ' ' + $.trim(description_text)).toLowerCase());
       li.append(span);
       this.addDescription(li, description_text);
     }
@@ -48,8 +53,13 @@ RepoSearch.InstanceMethods = {
   
   addDescription: function(li, description) {
     if (description !== '') {
-      var div = $(document.createElement('div')).addClass('description').css({'border-top': '1px solid #333', 'margin-top': '5px', 'padding': '2px 5px 2px 5px'}).hide(),
-          p = $(document.createElement('p')).css({'font-size': '12px', 'color': '#333'}).text(description);
+      var div = $(document.createElement('div'))
+        .addClass('description')
+        .css({'border-top': '1px solid #333', 'margin-top': '5px', 'padding': '2px 5px 2px 5px'})
+        .hide();
+      var p = $(document.createElement('p'))
+        .css({'font-size': '12px', 'color': '#333'})
+        .text(description);
       div.append(p);
       li.append(div);
     }              
@@ -83,8 +93,8 @@ RepoSearch.InstanceMethods = {
   },
   
   performSearch: function(el) {        
-    var text = el.attr('value'), document_ul = this.repos.children('ul'), ul;
-    if (text !== '') {
+    var token = el.attr('value'), document_ul = this.repos.children('ul'), ul;
+    if (token !== '') {
       var score,
           scores = [], 
           lis = document_ul.children('li'),
@@ -92,16 +102,16 @@ RepoSearch.InstanceMethods = {
 
       ul = $(fragment.appendChild(document.createElement('ul')));      
       for(var i = 0; i < lis.length; i++) {
-        score = $.trim(lis[i].getElementsByClassName('search_text')[0].innerHTML).score(text);
+        score = lis[i].getElementsByClassName('search_text')[0].innerHTML.score(token);
         scores.push([score, i]);        
       }
       scores = scores.sort().reverse();        
       for(var i = 0; i < scores.length; i++) {
         li = lis[scores[i][1]];
         if(scores[i][0]) {
-          li.style.display = 'none';
-        } else {
           li.style.display = '';
+        } else {
+          li.style.display = 'none';
         }
         ul[0].appendChild(li);
       }
@@ -120,7 +130,7 @@ RepoSearch.InstanceMethods = {
 $.extend(RepoSearch.prototype, RepoSearch.InstanceMethods);
 delete RepoSearch.InstanceMethods;
 
-for(var i = 0; i < $('div.repos').length; i++) {
-  new RepoSearch($($('div.repos')[i]), this);  
-}
+$('div.repos').each(function() {
+  new RepoSearch($(this));
+})
 
