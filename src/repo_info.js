@@ -13,7 +13,7 @@ var RepoInfo = (function() {
     var repos = [], key
     for(var i = 0; i < current.length; i++) {
       key = $(current[i]).attr('href').replace(/(?:^\/|http:\/\/github.com\/)(.*)\/tree(?:.*)?/, '$1');
-      if((stored[key] === undefined) && (repos.indexOf(key) !== -1)) {
+      if((stored[key] === undefined) && (repos.indexOf(key) === -1)) {
         repos.push(key);
       }
     }
