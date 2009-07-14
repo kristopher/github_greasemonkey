@@ -1,13 +1,4 @@
-// ==UserScript==
-// @name              Github GreaseMonky
-// @namespace	        http://github.com/kristopher
-// @description	      Stript to enhance the github dashboard
-// @include		        https://github.com/
-// @include		        https://github.com/dashboard/yours
-// @include		        http://github.com/*
-// @exclude           http://github.com/
-// @exclude           https://github.com/home
-// ==/UserScript==
+//= require "meta"
 //= require "lib/jquery-1.3.2.min"
 //= require "lib/quicksilver"
 //= require "lib/json2.min.js"
