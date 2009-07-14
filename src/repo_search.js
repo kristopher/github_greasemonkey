@@ -6,8 +6,13 @@ var RepoSearch = function(el) {
   this.original_content_fragment = document.createDocumentFragment();
   this.search_input_css = { 'width': '24em', 'padding': '3px 11px 0 0', 'color': this.label_color };
   this.search_div_css = { 'margin': '5px 0 10px 0' };
+  this.status_indicator_css = { 'display': 'none', 'bottom': '19px', 'float': 'right', 'position': 'relative', 'left': '-3px'};
+  this.current_search_input_value = '';
+  this.list_reset = true;
+  this.polling_frequency = 50;
   this.stored_repositories = this.loadStoredRepositories();      
   this.initialize(el);
+  this.startSearchPollingTimer();    
 }
 
 RepoSearch.InstanceMethods = {
@@ -20,15 +25,64 @@ RepoSearch.InstanceMethods = {
     } 
   },
 
+  reset: function() {
+    clearTimeout(this.polling_timer);
+    this.resetList();
+    this.removeStatusIndicator();
+    this.startSearchPollingTimer();
+  },
+  
+  resetList: function() {
+    if (!this.list_reset) {
+      var ul = $(this.original_content_fragment.childNodes[0].cloneNode(true));      
+      this.repos.children('ul').replaceWith(ul);      
+      this.list_reset = true;
+    }
+  },
+  
+  loadStoredRepositories: function() {
+    return JSON.parse(localStorage.getItem('repositories') || "{}");
+  },
+
+  startSearchPollingTimer: function() {
+    var self = this;
+    this.polling_timer = setTimeout(function () {
+      self.checkForSearchInputChanges();
+    }, this.polling_frequency);
+  },
+  
+  checkForSearchInputChanges: function() {
+    var token = this.search_input.attr('value')
+    if (this.search_input.hasClass('dirty')) {
+      if(this.searchInputValueHasChanged(token)) {
+        this.performSearch(token);                
+      }
+      this.current_search_input_value = token;
+    } else {
+      this.current_search_input_value = '';
+    }
+    this.removeStatusIndicator();
+    this.startSearchPollingTimer();
+  },
+  
+  searchInputValueHasChanged: function(token) {
+    return (token !== this.current_search_input_value);
+  },
+  
   addSearchInputs: function() {
     var div = $(document.createElement('div'))
           .css(this.search_div_css).addClass('repo_search');
-
-    var input = $(document.createElement('input'))
+    var image = $(new Image())
+          .attr('src', '/images/modules/ajax/indicator.gif') 
+    this.status_indicator = $(document.createElement('span'))
+          .css(this.status_indicator_css)
+    this.status_indicator.append(image);
+    this.search_input = $(document.createElement('input'))
           .attr({ 'type': 'text', 'value': this.label_text })
           .css(this.search_input_css);
-    div.append(input);      
-    this.attachSearchInputEvents(input);
+    div.append(this.search_input);      
+    div.append(this.status_indicator);
+    this.attachSearchInputEvents();
     this.repos.children('ul').before(div);
   },
   
@@ -84,23 +138,24 @@ RepoSearch.InstanceMethods = {
   
   attachSearchInputEvents: function(input) {
     var self = this;
-    input.keyup(function(e) {
+    this.search_input.keyup(function(e) {
       var el = $(e.target);
       if(el.attr('value') === '') {
         el.removeClass('dirty');
+        self.reset()
       } else {
+        self.addStatusIndicator();
         el.addClass('dirty');
       }
-      self.performSearch($(e.target));      
     });
-    input.blur(function(e) {
+    this.search_input.blur(function(e) {
       var el = $(e.target);
       if(!el.hasClass('dirty')) {
         el.attr('value', self.label_text);
         el.css('color', self.label_color);
       } 
     });
-    input.focus(function(e) {
+    this.search_input.focus(function(e) {
       var el = $(e.target);
       if(!el.hasClass('dirty')) {
         el.attr('value', '');
@@ -109,37 +164,40 @@ RepoSearch.InstanceMethods = {
     });
   },
   
-  performSearch: function(el) {        
-    var token = el.attr('value'), document_ul = this.repos.children('ul'), ul
-    if(token !== '') {
-      // Ugly but substantially faster than a pure JQuery implementation
-      var description, li, lis = [], results, fragment = document.createDocumentFragment();
-      ul = $(fragment.appendChild(document.createElement('ul')));
-      results = this.json_search.getResults(token, this.search_data)
-      search_data_ordered_by_results = $.unique(results.concat(this.search_data))
-      
-      for(var i = 0; i < search_data_ordered_by_results.length; i++) {
-        li = document_ul[0].getElementsByClassName(search_data_ordered_by_results[i]['class'])[0];
-        description = li.getElementsByClassName('description')[0];
-        if(description) {
-          description.style.display = '';
-        }
-        li.style.display = 'none'
-        ul[0].appendChild(li);        
-        lis.push(li);        
+  performSearch: function(token) {        
+    // Ugly but substantially faster than a pure JQuery implementation
+    this.list_reset = false;
+    var description, li, ul, results, lis = [],
+        fragment = document.createDocumentFragment(),
+        document_ul = this.repos.children('ul'),
+    ul = $(fragment.appendChild(document.createElement('ul')));
+    results = this.json_search.getResults(token, this.search_data)
+    search_data_ordered_by_results = $.unique(results.concat(this.search_data))
+    
+    for(var i = 0; i < search_data_ordered_by_results.length; i++) {
+      li = document_ul[0].getElementsByClassName(search_data_ordered_by_results[i]['class'])[0];
+      description = li.getElementsByClassName('description')[0];
+      if(description) {
+        description.style.display = '';
       }
-      for(var i = 0; i < results.length; i++) {
-        lis[i].style.display = ''
-      } 
-    } else {
-      ul = $(this.original_content_fragment.childNodes[0].cloneNode(true));      
+      li.style.display = 'none'
+      ul[0].appendChild(li);        
+      lis.push(li);        
     }
+    for(var i = 0; i < results.length; i++) {
+      lis[i].style.display = ''
+    } 
     document_ul.replaceWith(ul);
   },
-
-  loadStoredRepositories: function() {
-    return JSON.parse(localStorage.getItem('repositories') || "{}");
+  
+  addStatusIndicator: function() {
+    this.status_indicator.show();
+  },
+  
+  removeStatusIndicator: function() {
+    this.status_indicator.hide()
   }
+  
 }
 
 $.extend(RepoSearch.prototype, RepoSearch.InstanceMethods);
@@ -148,4 +206,3 @@ delete RepoSearch.InstanceMethods;
 $('div.repos').each(function() {
   new RepoSearch($(this));
 })
-
