@@ -1,7 +1,7 @@
 //= require "meta"
 //= require "lib/jquery-1.3.2.min"
-//= require "lib/quicksilver"
 //= require "lib/json2.min.js"
+//= require "lib/json_search.0.9.0.js"
 //= require "repo_search"
 //= require "analyze"
 //= require "repo_info"
