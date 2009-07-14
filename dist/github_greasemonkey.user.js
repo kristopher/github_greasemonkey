@@ -516,7 +516,7 @@ var RepoInfo = (function() {
 
 })()
 var UserInfo = (function() {
-  var current_users = $('.repos.watching li > a, div.alert div.title > a:first-child, div.alert.member_add div.title > a:nth-child(3)'),
+  var current_users = $('.repos.watching li > a, div.alert div.title > a:first-child, div.alert.member_add div.title > a:nth-child(3), a.committer'),
       stored_users = loadStoredUsers(),
       api_path = '/api/v2/json/user/show/',
       finished_loading = false,
