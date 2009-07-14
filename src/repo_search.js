@@ -1,4 +1,5 @@
 var RepoSearch = function(el) {
+  this.constructor.instances.push(this);
   this.label_text = 'Search ' + el.children('h1').contents().filter(function() { 
     return (this.nodeType === 3);
   })[0].nodeValue;
@@ -12,28 +13,28 @@ var RepoSearch = function(el) {
   this.polling_frequency = 50;
   this.stored_repositories = this.loadStoredRepositories();      
   this.initialize(el);
-  this.startSearchPollingTimer();    
+  this.reset(true);
 }
 
 RepoSearch.InstanceMethods = {
   initialize: function(el) {  
     if (this.repos = $(el)) {
       this.addSearchInputs();
-      this.buildJsonSearchObject()
-      this.createJSONSearch();        
       this.original_content_fragment.appendChild(this.repos.children('ul')[0].cloneNode(true))
+      this.buildJsonSearchObject()
+      this.createJSONSearch();
     } 
   },
 
-  reset: function() {
+  reset: function(force) {
     clearTimeout(this.polling_timer);
-    this.resetList();
+    this.resetList(force);
     this.removeStatusIndicator();
     this.startSearchPollingTimer();
   },
   
-  resetList: function() {
-    if (!this.list_reset) {
+  resetList: function(force) {
+    if (force || !this.list_reset) {
       var ul = $(this.original_content_fragment.childNodes[0].cloneNode(true));      
       this.repos.children('ul').replaceWith(ul);      
       this.list_reset = true;
@@ -44,6 +45,12 @@ RepoSearch.InstanceMethods = {
     return JSON.parse(localStorage.getItem('repositories') || "{}");
   },
 
+  updateStoredRepositories: function() {
+    this.stored_repositories = loadStoredRepositories();
+    this.updateDescriptions();
+    this.updateSearchData();
+  },
+  
   startSearchPollingTimer: function() {
     var self = this;
     this.polling_timer = setTimeout(function () {
@@ -87,7 +94,7 @@ RepoSearch.InstanceMethods = {
   },
   
   buildJsonSearchObject: function() {
-    var li, key, row, search_data = [], lis = this.repos.children('ul').children('li');
+    var li, key, row, search_data = [], lis = $(this.original_content_fragment).children('ul').children('li');
     for(var i = 0; i < lis.length; i++) {
       li = $(lis[i]);
       key = li.find('b > a').attr('href').replace(/(?:^\/|http:\/\/github.com\/)(.*)\/tree/, '$1')
@@ -105,6 +112,10 @@ RepoSearch.InstanceMethods = {
       search_data.push(row);
     }
     this.search_data = search_data;
+  },
+  
+  updateSearchData: function() {
+    this.buildJsonSearchObject();
   },
   
   createJSONSearch: function() {
@@ -134,6 +145,23 @@ RepoSearch.InstanceMethods = {
       div.append(p);
       li.append(div);
     }              
+  },
+  
+  updateDescriptions: function() {
+    var description, li, text, ul = $(this.original_content_fragment.childNodes[0])
+    for(var property in this.stored_repositories) {
+      if (text = this.stored_repositories[property]['description']) {
+        li = ul.children('li.' + property.replace(/\//, '_'));
+        if (li[0]) {
+          description = li.children('div.description');
+          if (decription[0]) {  
+            decription.text(text);
+          } else {
+            this.addDescription(li, text);
+          }
+        }        
+      }
+    }
   },
   
   attachSearchInputEvents: function(input) {
@@ -199,6 +227,8 @@ RepoSearch.InstanceMethods = {
   }
   
 }
+
+RepoSearch.instances = [];
 
 $.extend(RepoSearch.prototype, RepoSearch.InstanceMethods);
 delete RepoSearch.InstanceMethods;
