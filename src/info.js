@@ -5,8 +5,8 @@ var Info = function() {
 RepoInfo.onFinishedLoading(function() {
   UserInfo.init();
   if (this.updated) {
-    JQuery.each(RepoSearch.instances, function() {
-      this.updateStoreRepositories();
+    $.each(RepoSearch.instances, function(i) {
+      this.updateStoredRepositories();
     })
   }
 })  
