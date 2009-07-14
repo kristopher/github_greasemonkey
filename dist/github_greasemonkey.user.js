@@ -150,6 +150,188 @@ cx.lastIndex=0;if(cx.test(text)){text=text.replace(cx,function(a){return'\\u'+
 ('0000'+a.charCodeAt(0).toString(16)).slice(-4);});}
 if(/^[\],:{}\s]*$/.test(text.replace(/\\(?:["\\\/bfnrt]|u[0-9a-fA-F]{4})/g,'@').replace(/"[^"\\\n\r]*"|true|false|null|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?/g,']').replace(/(?:^|:|,)(?:\s*\[)+/g,''))){j=eval('('+text+')');return typeof reviver==='function'?walk({'':j},''):j;}
 throw new SyntaxError('JSON.parse');};}}());
+var JSONSearch = function(options) {
+
+  this.default_options = {
+    fields: {},
+    ranks: {},
+    limit: null,
+    offset: 0,
+    case_sensitive: false
+  };
+
+  this.patterns = {
+    infix: '.*$token.*',
+    prefix: '^$token.*',
+    exact: '^$token$',
+    word: '\\b$token\\b',
+    word_prefix: '\\b$token.*'
+  };
+
+  this.query_string = '';
+  this.query_function = "1&&function(object) { var hits = 0, ranks_array = []; #{query_string} if (hits > 0) { return [(ranks_array.sort()[ranks_array.length - 1] || 0), hits, object]; } }";
+
+  this.initialize(options);
+};
+
+JSONSearch.InstanceMethods = {
+  initialize: function(options) {
+    this.options = {};
+    for(var property in this.default_options) {
+      this.options[property] = this.default_options[property]
+    };
+    for(var property in options) {
+      this.options[property] = options[property];
+    }
+    this.setAttributes(options);
+    this.buildMatcherTemplates();
+    this.buildQueryString();
+  },
+
+  setAttributes: function() {
+    var args = ['fields', 'limit', 'offset', 'case_sensitive'];
+    for(var i = 0; i < args.length; i++) {
+      this[args[i]] = this.options[args[i]];
+    };
+    this.ranks = this.getRanks();
+    this.fields_ordered_by_rank = this.fieldsOrderedByRank();
+  },
+
+  buildMatcherTemplates: function() {
+    for(var property in this.patterns) {
+      this[property + '_matcher'] = 'if(/' + this.patterns[property] + '/#{regex_options}.test(object["#{name}"])){hits++;ranks_array.push(ranks["#{name}"]);}';
+    };
+  },
+
+  getRanks: function(object) {
+    var ranks = {};
+    for(var property in this.fields) {
+      ranks[property] = (this.options.ranks && this.options.ranks[property] || 0);
+    };
+    return ranks;
+  },
+
+  // TODO if ranks are all 0 might just use the format order if supplied
+  fieldsOrderedByRank: function() {
+    var fields_ordered_by_rank = [];
+    for(var property in this.ranks){
+      fields_ordered_by_rank.push([this.ranks['property'], property]);
+    };
+    fields_ordered_by_rank = fields_ordered_by_rank.sort().reverse();
+    for(var i = 0; i < fields_ordered_by_rank.length; i++) {
+      fields_ordered_by_rank[i] = fields_ordered_by_rank[i][1];
+    }
+    return fields_ordered_by_rank;
+  },
+
+  buildQueryString: function() {
+    var query_string_array = [], field;
+    for(var i = 0; i < this.fields_ordered_by_rank.length; i++) {
+      field = this.fields_ordered_by_rank[i];
+      query_string_array.push(this.buildMatcher(field, this.fields[field]));
+    }
+    this.query_string = query_string_array.join('');
+  },
+
+  buildMatcher: function(name, pattern) {
+    return this.subMatcher(this[pattern + '_matcher'], { name: name, regex_options: this.getRegexOptions() });
+  },
+
+  subMatcher: function(matcher, object) {
+    var subbed_matcher = matcher;
+    for(var property in object) {
+      subbed_matcher = subbed_matcher.replace('#{' + property + '}', object[property], 'g')
+    }
+    return subbed_matcher;
+  },
+
+  subQueryString: function(token) {
+    return this.query_string.replace(/\$token/g, this.regexEscape(token));
+  },
+
+  subQueryFunction: function(object) {
+    var subbed_query_function;
+    for(var property in object) {
+      subbed_query_function = this.query_function.replace('#{' + property + '}', object[property], 'g')
+    }
+    return subbed_query_function;
+  },
+
+  //TODO add an options object to pass limit/offset.
+  getResults: function(token, object) {
+    object = this.evalJSON(object);
+    if (!(object instanceof Array)) {
+      object = [object];
+    }
+    var results, subbed_query_string = this.subQueryString(token);
+    results = this.getFilteredResults(subbed_query_string, object);
+    results = this.sortResults(results);
+    results = this.limitResults(results);
+    return this.cleanResults(results);
+  },
+
+  getFilteredResults: function(query_string, array) {
+    var results = [], ranks = this.ranks, result, len = (array.length), query_string = (query_string || '');
+    var query_function = eval(this.subQueryFunction({ query_string: query_string }));
+
+    for(var i = 0; i < len; ++i) {
+      if(result = query_function(array[i])) {
+        results.push(result);
+      }
+    }
+    return results;
+  },
+
+  sortResults: function(results) {
+    return results.sort().reverse();
+  },
+
+  limitResults: function(results) {
+    if (this.limit) {
+      return results.slice(this.offset, (this.limit + this.offset));
+    } else if (this.offset > 0) {
+      return results.slice(this.offset, (results.length));
+    } else {
+      return results;
+    }
+  },
+
+  cleanResults: function(results) {
+    var clean_results = []; len = (results.length);
+    for(var i = 0; i < len; ++i) {
+      clean_results.push(results[i][2]);
+    }
+    return clean_results;
+  },
+
+  evalJSON: function(json) {
+    if (typeof json == 'string') {
+      try {
+        json = eval('(' + json + ')');
+      } catch(e) {
+        throw new SyntaxError('Badly formed JSON string');
+      }
+    }
+    return json;
+  },
+
+  getRegex: function(token, pattern) {
+    return new RegExp(this.patterns[pattern].replace(/\$token/, this.regexEscape(token)), this.getRegexOptions());
+  },
+
+  getRegexOptions: function() {
+    return (this.case_sensitive && '' || 'i');
+  },
+
+  regexEscape: function(string) {
+    return String(string).replace(/([.*+?^=!:${}()|[\]\/\\])/g, '\\$1');
+  }
+}
+
+for(var property in JSONSearch.InstanceMethods) {
+  JSONSearch.prototype[property] = JSONSearch.InstanceMethods[property]
+}
+delete JSONSearch.InstanceMethods;
 var RepoSearch = function(el) {
   this.label_text = 'Search ' + el.children('h1').contents().filter(function() {
     return (this.nodeType === 3);
@@ -166,7 +348,13 @@ RepoSearch.InstanceMethods = {
   initialize: function(el) {
     if (this.repos = $(el)) {
       this.addSearchInputs();
-      this.addSearchText();
+      try {
+        this.buildJsonSearchObject()
+        this.createJSONSearch();
+      } catch(e) {
+        console.error(e.message);
+      }
+      // this.addSearchText();
       this.original_content_fragment.appendChild(this.repos.children('ul')[0].cloneNode(true))
     }
   },
@@ -181,6 +369,42 @@ RepoSearch.InstanceMethods = {
     div.append(input);
     this.attachSearchInputEvents(input);
     this.repos.children('ul').before(div);
+  },
+
+  buildJsonSearchObject: function() {
+    var li, key, row, search_data = [], lis = this.repos.children('ul').children('li');
+    for(var i = 0; i < lis.length; i++) {
+      li = $(lis[i]);
+      key = li.find('b > a').attr('href').replace(/(?:^\/|http:\/\/github.com\/)(.*)\/tree/, '$1')
+      row = {
+        'class': key.replace(/\//, '_'),
+        user: $.trim(key.split(/\//)[0]),
+        repo: $.trim(key.split(/\//)[1]),
+        description: ''
+      }
+      if (this.stored_repositories[key]) {
+        row['description'] = (this.stored_repositories[key]['description'] || '');
+      }
+      li.addClass(row['class']);
+      this.addDescription(li, row['description']);
+      search_data.push(row);
+    }
+    this.search_data = search_data;
+  },
+
+  createJSONSearch: function() {
+    this.json_search = new JSONSearch({
+      fields: {
+        user: 'prefix',
+        repo: 'prefix',
+        description: 'word_prefix'
+      },
+      ranks: {
+        user: 1,
+        repo: 2,
+        description: 0
+      }
+    })
   },
 
   addSearchText: function() {
@@ -245,29 +469,26 @@ RepoSearch.InstanceMethods = {
   },
 
   performSearch: function(el) {
-    var token = el.attr('value'), document_ul = this.repos.children('ul'), ul;
-    if (token !== '') {
-      var score,
-          scores = [],
-          lis = document_ul.children('li'),
-          fragment = document.createDocumentFragment();
-
+    var token = el.attr('value'), document_ul = this.repos.children('ul'), ul
+    if(token !== '') {
+      // Ugly but substansually faster than a pure JQuery implementation
+      var description, li, lis = [], results, fragment = document.createDocumentFragment();
       ul = $(fragment.appendChild(document.createElement('ul')));
-      for(var i = 0; i < lis.length; i++) {
-        score = lis[i].getElementsByClassName('search_text')[0].innerHTML.score(token);
-        scores.push([score, i]);
-      }
-      scores = scores.sort().reverse();
-      for(var i = 0; i < scores.length; i++) {
-        li = lis[scores[i][1]];
-        if(scores[i][0]) {
-          li.style.display = '';
-        } else {
-          li.style.display = 'none';
+      results = this.json_search.getResults(token, this.search_data)
+      search_data_ordered_by_results = $.unique(results.concat(this.search_data))
+      for(var i = 0; i < search_data_ordered_by_results.length; i++) {
+        li = document_ul[0].getElementsByClassName(search_data_ordered_by_results[i]['class'])[0];
+        description = li.getElementsByClassName('description')[0];
+        if(description) {
+          description.style.display = '';
         }
+        li.style.display = 'none'
         ul[0].appendChild(li);
+        lis.push(li);
       }
-      ul.find('div.description').show();
+      for(var i = 0; i < results.length; i++) {
+        lis[i].style.display = ''
+      }
     } else {
       ul = $(this.original_content_fragment.childNodes[0].cloneNode(true));
     }
@@ -428,15 +649,9 @@ Analyze.Repository.prototype.addLinks = function() {
   this.repo_buttons.append(this.createButton(this.analyze_profile_path + '/' + this.repo_name).css(this.repo_button_style));
 }
 
-var start = new Date()
 new Analyze.LoggedInProfile();
-console.debug('Analyze.LoggedInProfile: ' + (new Date - start));
-start = new Date()
 new Analyze.Profile();
-console.debug('Analyze.Profile: ' + (new Date - start));
-start = new Date()
 new Analyze.Repository();
-console.debug('Analyze.Repository: ' + (new Date - start));
 var RepoInfo = (function() {
   var current,
       current_watched = $('.repos.watching li.public b > a').get(),
@@ -453,7 +668,6 @@ var RepoInfo = (function() {
     for(var i = 0; i < current.length; i++) {
       key = $(current[i]).attr('href').replace(/(?:^\/|http:\/\/github.com\/)(.*)\/tree(?:.*)?/, '$1');
       if((stored[key] === undefined) && (repos.indexOf(key) === -1)) {
-        console.debug(key);
         repos.push(key);
       }
     }
@@ -595,12 +809,12 @@ var Info = function() {
 
 }
 
-try {
-  RepoInfo.onFinishedLoading(function() {
-    UserInfo.init();
-  })
-} catch(e) {
-  console.debug(e.message);
-}
+RepoInfo.onFinishedLoading(function() {
+  UserInfo.init();
+})
+
+UserInfo.onFinishedLoading(function() {
+
+})
 
 RepoInfo.init();
