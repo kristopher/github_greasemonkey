@@ -37,8 +37,8 @@ var UserInfo = (function() {
   }
   
   function getAndStoreUserData(user) {
-    $.get(api_path + user, function(json) {
-      storeUserJSON(user, JSON.parse(json)['user']);
+    $.getJSON(api_path + user, function(json) {
+      storeUserJSON(user, json['user']);
     });
   }
   

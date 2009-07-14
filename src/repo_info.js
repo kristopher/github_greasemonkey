@@ -41,8 +41,9 @@ var RepoInfo = (function() {
   }
   
   function getAndStoreRepoData(repo) {
-    $.get(api_path + repo, function(json) {
-      storeRepoJSON(repo, JSON.parse(json)['repository']);
+    // TODO handle api("error": [{"error": "repository not found"}]}) reponses
+    $.getJSON(api_path + repo, function(json) {
+      storeRepoJSON(repo, json['repository']);
     });
   }
   
