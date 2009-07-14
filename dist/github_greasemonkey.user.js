@@ -479,8 +479,9 @@ var RepoInfo = (function() {
   }
 
   function getAndStoreRepoData(repo) {
-    $.get(api_path + repo, function(json) {
-      storeRepoJSON(repo, JSON.parse(json)['repository']);
+    // TODO handle api("error": [{"error": "repository not found"}]}) reponses
+    $.getJSON(api_path + repo, function(json) {
+      storeRepoJSON(repo, json['repository']);
     });
   }
 
@@ -553,8 +554,8 @@ var UserInfo = (function() {
   }
 
   function getAndStoreUserData(user) {
-    $.get(api_path + user, function(json) {
-      storeUserJSON(user, JSON.parse(json)['user']);
+    $.getJSON(api_path + user, function(json) {
+      storeUserJSON(user, json['user']);
     });
   }
 
