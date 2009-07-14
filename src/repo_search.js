@@ -14,7 +14,8 @@ RepoSearch.InstanceMethods = {
   initialize: function(el) {  
     if (this.repos = $(el)) {
       this.addSearchInputs();
-      this.addSearchText();      
+      this.buildJsonSearchObject()
+      this.createJSONSearch();        
       this.original_content_fragment.appendChild(this.repos.children('ul')[0].cloneNode(true))
     } 
   },
@@ -30,25 +31,41 @@ RepoSearch.InstanceMethods = {
     this.attachSearchInputEvents(input);
     this.repos.children('ul').before(div);
   },
-
-  addSearchText: function() {
-    var span, key, description_text,
-        lis = this.repos.children('ul').children('li');
-
+  
+  buildJsonSearchObject: function() {
+    var li, key, row, search_data = [], lis = this.repos.children('ul').children('li');
     for(var i = 0; i < lis.length; i++) {
-      description_text = '';
       li = $(lis[i]);
       key = li.find('b > a').attr('href').replace(/(?:^\/|http:\/\/github.com\/)(.*)\/tree/, '$1')
-      if (this.stored_repositories[key]) {
-        description_text = (this.stored_repositories[key]['description'] || '');
+      row = {
+        'class': key.replace(/\//, '_'),
+        user: $.trim(key.split(/\//)[0]),
+        repo: $.trim(key.split(/\//)[1]),
+        description: ''
       }
-      span = $(document.createElement('span'))
-        .addClass('search_text')
-        .hide()
-        .text((key + ' ' + $.trim(description_text)).toLowerCase());
-      li.append(span);
-      this.addDescription(li, description_text);
+      if (this.stored_repositories[key]) {
+        row['description'] = (this.stored_repositories[key]['description'] || '');
+      }
+      li.addClass(row['class']);
+      this.addDescription(li, row['description']);
+      search_data.push(row);
     }
+    this.search_data = search_data;
+  },
+  
+  createJSONSearch: function() {
+    this.json_search = new JSONSearch({
+      fields: {
+        user: 'prefix',
+        repo: 'prefix',
+        description: 'word_prefix'
+      },
+      ranks: {
+        user: 1,
+        repo: 2,
+        description: 0
+      }
+    })
   },
   
   addDescription: function(li, description) {
@@ -93,31 +110,29 @@ RepoSearch.InstanceMethods = {
   },
   
   performSearch: function(el) {        
-    var token = el.attr('value'), document_ul = this.repos.children('ul'), ul;
-    if (token !== '') {
-      var score,
-          scores = [], 
-          lis = document_ul.children('li'),
-          fragment = document.createDocumentFragment();
-
-      ul = $(fragment.appendChild(document.createElement('ul')));      
-      for(var i = 0; i < lis.length; i++) {
-        score = lis[i].getElementsByClassName('search_text')[0].innerHTML.score(token);
-        scores.push([score, i]);        
-      }
-      scores = scores.sort().reverse();        
-      for(var i = 0; i < scores.length; i++) {
-        li = lis[scores[i][1]];
-        if(scores[i][0]) {
-          li.style.display = '';
-        } else {
-          li.style.display = 'none';
+    var token = el.attr('value'), document_ul = this.repos.children('ul'), ul
+    if(token !== '') {
+      // Ugly but substantially faster than a pure JQuery implementation
+      var description, li, lis = [], results, fragment = document.createDocumentFragment();
+      ul = $(fragment.appendChild(document.createElement('ul')));
+      results = this.json_search.getResults(token, this.search_data)
+      search_data_ordered_by_results = $.unique(results.concat(this.search_data))
+      
+      for(var i = 0; i < search_data_ordered_by_results.length; i++) {
+        li = document_ul[0].getElementsByClassName(search_data_ordered_by_results[i]['class'])[0];
+        description = li.getElementsByClassName('description')[0];
+        if(description) {
+          description.style.display = '';
         }
-        ul[0].appendChild(li);
+        li.style.display = 'none'
+        ul[0].appendChild(li);        
+        lis.push(li);        
       }
-      ul.find('div.description').show();
+      for(var i = 0; i < results.length; i++) {
+        lis[i].style.display = ''
+      } 
     } else {
-      ul = $(this.original_content_fragment.childNodes[0].cloneNode(true));
+      ul = $(this.original_content_fragment.childNodes[0].cloneNode(true));      
     }
     document_ul.replaceWith(ul);
   },
