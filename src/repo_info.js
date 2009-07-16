@@ -17,7 +17,7 @@ var RepoInfo = (function() {
         repos.push(key);
       }
     }
-    addClickEventHandlers()
+    addTooltips()
     addStatusIndicator();
     getAndStoreReposData(repos)      
   }
@@ -40,7 +40,7 @@ var RepoInfo = (function() {
     return fragment.childNodes[0].innerHTML;
   }
   
-  function addClickEventHandlers() {
+  function addTooltips() {
     var el
     $(current).each(function() {
       el = $(this)
