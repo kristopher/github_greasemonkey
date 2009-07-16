@@ -12,13 +12,46 @@ var RepoInfo = (function() {
     current = current_watched.concat(current_owned).concat(current_feed);
     var repos = [], key
     for(var i = 0; i < current.length; i++) {
-      key = $(current[i]).attr('href').replace(/(?:^\/|http:\/\/github.com\/)(.*)\/tree(?:.*)?/, '$1');
+      key = repoIdFromUrl($(current[i]).attr('href'));
       if((stored[key] === undefined) && (repos.indexOf(key) === -1)) {
         repos.push(key);
       }
     }
+    addClickEventHandlers()
     addStatusIndicator();
     getAndStoreReposData(repos)      
+  }
+  
+  function repoIdFromUrl(url) {
+    return url.replace(/(?:^\/|http:\/\/github.com\/)(.*)\/tree(?:.*)?/, '$1');
+  }
+
+  function repoJSONToHTML(repo) {
+    var div,
+        fragment = document.createDocumentFragment(),
+        wrapper = $(fragment.appendChild(document.createElement('div'))),
+        json = stored[repo];
+    for(var property in json) {
+      div = $(document.createElement('div'))
+        .append($(document.createElement('span')).html(property + ':'))
+        .append($(document.createElement('span')).html(json[property]))
+      wrapper.append(div)
+    }
+    return fragment.childNodes[0].innerHTML;
+  }
+  
+  function addClickEventHandlers() {
+    var el
+    $(current).each(function() {
+      el = $(this)
+      el.tooltip({
+        showURL: false,
+        bodyHandler: function() {
+          var repo_id = RepoInfo.repoIdFromUrl(el.attr('href'))          
+          return RepoInfo.repoJSONToHTML(repo_id);
+        }
+      }, function() {});
+    })
   }
   
   function loadStoredWatched() {
@@ -99,7 +132,9 @@ var RepoInfo = (function() {
   return {
     init: init,
     finishedLoading: finishedLoading,
-    onFinishedLoading: onFinishedLoading
+    onFinishedLoading: onFinishedLoading,
+    repoIdFromUrl: repoIdFromUrl,
+    repoJSONToHTML: repoJSONToHTML
   }
 
 })()
