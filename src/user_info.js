@@ -32,25 +32,29 @@ var UserInfo = (function() {
   function userJSONToHTML(repo) {
     var json = stored_users[repo];
     if (json) {
-      var key, value, tr,
+      var key, value, tr, property,
           table = $(document.createElement('table')),
           fragment = document.createDocumentFragment(),
-          wrapper = $(fragment.appendChild(document.createElement('div')));
+          wrapper = $(fragment.appendChild(document.createElement('div'))),
+          keys = orderedJSONKeysForDisplay();
       wrapper.append(table);
-      for(var property in json) {      
-        if (property !== 'url') {
-          key = printedKeyForProperty(property);
-          value = printedValueForProperty(property, json[property])
-          tr = $(document.createElement('tr'))
-            .append($(document.createElement('td')).html(key))
-            .append($(document.createElement('td')).html(value));
-          table.append(tr);        
-        }
+      for(var i = 0; i < keys.length; i++) {      
+        property = keys[i];
+        key = printedKeyForProperty(property);
+        value = printedValueForProperty(property, json[property])
+        tr = $(document.createElement('tr'))
+          .append($(document.createElement('td')).html(key))
+          .append($(document.createElement('td')).html(value));
+        table.append(tr);        
       }
       return fragment.childNodes[0].innerHTML;      
     } else {
       return 'loading...';
     }
+  }
+
+  function orderedJSONKeysForDisplay() {
+    return ['name', 'email', 'company', 'location', 'blog', 'followers_count', 'following_count', 'public_repo_count', 'public_gist_count', 'created_at'];
   }
 
   function printedKeyForProperty(key) {
