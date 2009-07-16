@@ -1,18 +1,20 @@
-var Info = function() {
+var Info = (function() {
+  function init() {
+    
+  }
   
-}
+  return {
+    init: init
+  }
+
+})();
 
 RepoInfo.onFinishedLoading(function() {
   UserInfo.init();
-  if (this.updated) {
-    $.each(RepoSearch.instances, function(i) {
-      this.updateStoredRepositories();
-    })
-  }
 })  
 
 UserInfo.onFinishedLoading(function() {
-  
+  Info.init();
 })
 
 RepoInfo.init();

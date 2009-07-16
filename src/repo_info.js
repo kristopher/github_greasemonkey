@@ -17,6 +17,7 @@ var RepoInfo = (function() {
         repos.push(key);
       }
     }
+    addStatusIndicator();
     getAndStoreReposData(repos)      
   }
   
@@ -36,6 +37,7 @@ var RepoInfo = (function() {
         getAndStoreReposData(repos);
       }, 1000);      
     } else {
+      removeStatusIndicator();
       finished_loading = true
       runFinishedLoadingCallbacks();
     }
@@ -49,8 +51,11 @@ var RepoInfo = (function() {
   }
   
   function storeRepoJSON(repo, json) {
-    stored[repo] = json;
+    stored[repo] = json;    
     saveStoredWatched();
+    $.each(RepoSearch.instances, function() {
+      this.updateStoredRepositories(repo, json);
+    })
   }
     
   function finishedLoading() {
@@ -70,7 +75,27 @@ var RepoInfo = (function() {
       }
     }
   }
-
+  
+  function addStatusIndicator() {
+    $.each(RepoSearch.instances, function() {
+      var div = $(document.createElement('div'))
+          .addClass('status_indicator')
+          .css('color', '#666')
+          .text('Updating Repository Descriptions...');
+      var image = $(new Image())
+          .attr('src', '/images/modules/ajax/indicator.gif')
+          .css('float', 'right');
+      div.append(image);
+      this.repos.children('.repo_search').before(div);
+    });
+  }
+  
+  function removeStatusIndicator() {
+    $.each(RepoSearch.instances, function() {
+      this.repos.children('div.status_indicator').remove();
+    });
+  }
+  
   return {
     init: init,
     finishedLoading: finishedLoading,
