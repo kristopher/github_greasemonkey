@@ -6,9 +6,13 @@ This script adds some useful things to the interface of GitHub, both on the dash
 
 On your GitHub dashboard, it adds two search boxes, one above your repositories, and one above your watched repositories, that will filter the repository list as you type.  This ultimately makes it much faster to find what you're looking for.  I don't know about you, but I actually limit the amount of repositories I follow so I don't have to skim such a large list.  Now there's no need!
 
+## Hover
+
+The script also retrieves information about users and throws the info into a tooltip that is revealed when you hover over a user's name.  You can get information about users in your dashboard's news feed quickly, without needing to click through to their profile!
+
 ## Analyze
 
-This script also adds an analyze link or button in several places.  At the top right, where your gravatar and various personal links are located, is a link to your stats at analyze.github.com (i.e. http://analyze.github.com/mileszs).  Analyze.github.com is **not** affiliated with GitHub.  It presents stats via the GitHub API, such as aggragated traffic, forks, watchers (sparklines-style graphs available for all, so you can visualize the stats over time), as well as a list of suggested followers.
+This script also adds an analyze link or button in several places.  At the top right, where your gravatar and various personal links are located, is a link to your stats at analyze.github.com (i.e. http://analyze.github.com/mileszs).  Analyze.github.com is **not** affiliated with GitHub -- it's a project by [jqr](http://github.com/jqr) and [kristopher](http://github.com/kristopher). It presents stats via the GitHub API, such as aggragated traffic, forks, watchers (sparklines-style graphs available for all, so you can visualize the stats over time), as well as a list of suggested followers.
 
 ## Install
 
