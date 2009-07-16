@@ -78,23 +78,18 @@ var RepoInfo = (function() {
     for(var i = 0; i < current_feed.length; i++) {
       addTooltip($(current_feed[i]));
     }
-    $('div.repos b > a').live('mouseover', function() {
-      //TODO better solution.
-      var el = $(this);
-      RepoInfo.addTooltip(el);
-      el.triggerHandler('mouseover');
-    })
   }
   
   function addTooltip(el) {
-    el.tooltip({
-      showURL: false,
-      bodyHandler: function() {
+    el.simpletip({
+      content: '',
+      onBeforeShow: function() {        
         var repo_id = RepoInfo.repoIdFromUrl(el.attr('href'))          
-        return RepoInfo.repoJSONToHTML(repo_id);
+        this.update(RepoInfo.repoJSONToHTML(repo_id));
       }
     });    
   }
+
   function loadStoredWatched() {
     return JSON.parse(localStorage.getItem('repositories') || "{}" )      
   }

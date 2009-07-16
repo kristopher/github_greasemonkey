@@ -66,7 +66,7 @@ var UserInfo = (function() {
     } else {
       switch(key) {
         case 'created_at':
-          return new Date(value).toDateString();
+          return new Date(value).toLocaleDateString();
         case 'blog':
           return ('<a href="' + value + '">' + value + '</a>');
         default:
@@ -80,21 +80,14 @@ var UserInfo = (function() {
     for(var i = 0; i < feed_users.length; i++) {
       addTooltip($(feed_users[i]));
     }
-    $('.repos.watching li > a').live('mouseover', function() {
-      //TODO better solution.
-      var el = $(this);
-      UserInfo.addTooltip(el);
-      el.triggerHandler('mouseover');
-    })
-
   }
   
   function addTooltip(el) {
-    el.tooltip({
-      showURL: false,
-      bodyHandler: function() {
-        var user_id = UserInfo.userIdFromUrl($(this).attr('href'))          
-        return UserInfo.userJSONToHTML(user_id);
+    el.simpletip({
+      content: '',
+      onBeforeShow: function() {        
+        var user_id = UserInfo.userIdFromUrl(el.attr('href'));
+        this.update(UserInfo.userJSONToHTML(user_id));
       }
     });    
   }
