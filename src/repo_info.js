@@ -70,7 +70,7 @@ var RepoInfo = (function() {
     } else {
       switch(key) {
         case 'homepage':
-          return ('<a href="' + value + '">' + value + '</a>');
+          return ('<a href="' + value + '">' + value.substr(0, 50) + '...' + '</a>');
         case 'fork':
           return (value ? 'Yes' : 'No');
         case 'private':

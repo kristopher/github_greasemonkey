@@ -72,7 +72,7 @@ var UserInfo = (function() {
         case 'created_at':
           return new Date(value).toLocaleDateString();
         case 'blog':
-          return ('<a href="' + value + '">' + value + '</a>');
+          return ('<a href="' + value + '">' + value.substr(0, 50) + '...' + '</a>');
         default:
           return String(value);
       }      
