@@ -670,9 +670,11 @@ var RepoInfo = (function() {
           .append($(document.createElement('td')).html(value));
         table.append(tr);
       }
-      div = $(document.createElement('div'))
-        .append($(document.createElement('p')).html(printedValueForProperty('description', json['description'])));
-      wrapper.append(div);
+      if (json['description']) {
+        div = $(document.createElement('div'))
+          .append($(document.createElement('p')).html(printedValueForProperty('description', json['description'])));
+        wrapper.append(div);
+      }
       return fragment.childNodes[0].innerHTML;
     } else {
       return 'loading...';
@@ -715,9 +717,18 @@ var RepoInfo = (function() {
   }
 
   function addTooltip(el) {
-    el.simpletip({
+    var span = el.parent()
+    if (!span.hasClass('tooltip_wrapper')) {
+      span = $(document.createElement('span'))
+        .addClass('tooltip_wrapper')
+        .css('background', '#fff');
+      el.wrap(span);
+    }
+    var tooltip = el.parent().simpletip({
       content: '',
-      onBeforeShow: function() {
+      position: 'right',
+      offset: [5, 0],
+      onShow: function() {
         var repo_id = RepoInfo.repoIdFromUrl(el.attr('href'))
         this.update(RepoInfo.repoJSONToHTML(repo_id));
       }
@@ -905,9 +916,18 @@ var UserInfo = (function() {
   }
 
   function addTooltip(el) {
-    el.simpletip({
+    var span = el.parent()
+    if (!span.hasClass('tooltip_wrapper')) {
+      span = $(document.createElement('span'))
+        .addClass('tooltip_wrapper')
+        .css('background', '#fff');
+      el.wrap(span);
+    }
+    var tooltip = el.parent().simpletip({
       content: '',
-      onBeforeShow: function() {
+      position: 'right',
+      offset: [5, 0],
+      onShow: function() {
         var user_id = UserInfo.userIdFromUrl(el.attr('href'));
         this.update(UserInfo.userJSONToHTML(user_id));
       }
