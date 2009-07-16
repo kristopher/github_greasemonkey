@@ -243,7 +243,7 @@ var RepoSearch = function(el) {
     return (this.nodeType === 3);
   })[0].nodeValue;
   this.label_color = '#666';
-  this.original_content_fragment = document.createDocumentFragment();
+  this.original_content_fragment = $(document.createDocumentFragment());
   this.search_input_css = { 'width': '24em', 'padding': '3px 11px 0 0', 'color': this.label_color };
   this.search_div_css = { 'margin': '5px 0 10px 0' };
   this.status_indicator_css = { 'display': 'none', 'bottom': '19px', 'float': 'right', 'position': 'relative', 'left': '-3px'};
@@ -259,7 +259,7 @@ RepoSearch.InstanceMethods = {
   initialize: function(el) {
     if (this.repos = $(el)) {
       this.addSearchInputs();
-      this.original_content_fragment.appendChild(this.repos.children('ul')[0].cloneNode(true))
+      this.original_content_fragment[0].appendChild(this.repos.children('ul')[0].cloneNode(true))
       this.buildJsonSearchObject()
       this.createJSONSearch();
     }
@@ -274,7 +274,7 @@ RepoSearch.InstanceMethods = {
 
   resetList: function(force) {
     if (force || !this.list_reset) {
-      var ul = $(this.original_content_fragment.childNodes[0].cloneNode(true));
+      var ul = $(this.original_content_fragment[0].childNodes[0].cloneNode(true));
       this.repos.children('ul').replaceWith(ul);
       this.list_reset = true;
     }
@@ -284,10 +284,13 @@ RepoSearch.InstanceMethods = {
     return JSON.parse(localStorage.getItem('repositories') || "{}");
   },
 
-  updateStoredRepositories: function() {
-    this.stored_repositories = this.loadStoredRepositories();
-    this.updateDescriptions();
-    this.updateSearchData();
+  updateStoredRepositories: function(repo, json) {
+    this.stored_repositories = this.loadStoredRepositories()
+    this.updateDescriptions(repo, json['description']);
+    this.updateSearchData(repo, json);
+    if(!this.repos.find('input').hasClass('dirty')) {
+      this.resetList(true);
+    }
   },
 
   startSearchPollingTimer: function() {
@@ -333,7 +336,7 @@ RepoSearch.InstanceMethods = {
   },
 
   buildJsonSearchObject: function() {
-    var li, key, row, search_data = [], lis = $(this.original_content_fragment).children('ul').children('li');
+    var li, key, row, search_data = [], lis = this.original_content_fragment.children('ul').children('li');
     for(var i = 0; i < lis.length; i++) {
       li = $(lis[i]);
       key = li.find('b > a').attr('href').replace(/(?:^\/|http:\/\/github.com\/)(.*)\/tree/, '$1')
@@ -353,8 +356,16 @@ RepoSearch.InstanceMethods = {
     this.search_data = search_data;
   },
 
-  updateSearchData: function() {
-    this.buildJsonSearchObject();
+  updateSearchData: function(repo, json) {
+    var klass = repo.replace(/\//, '_');
+    if (this.original_content_fragment.children('.' + klass)[0]) {
+      this.search_data[repo] = {
+        'class': klass,
+        user: json['owner'],
+        repo: json['name'],
+        description: json['description']
+      }
+    }
   },
 
   createJSONSearch: function() {
@@ -386,16 +397,12 @@ RepoSearch.InstanceMethods = {
     }
   },
 
-  updateDescriptions: function() {
-    var description, li, text, ul = $(this.original_content_fragment.childNodes[0])
-    for(var property in this.stored_repositories) {
-      if (text = this.stored_repositories[property]['description']) {
-        li = ul.children('li.' + property.replace(/\//, '_'));
-        if (li[0]) {
-          li.children('div.description').remove();
-          this.addDescription(li, text);
-        }
-      }
+  updateDescriptions: function(repo, description) {
+    var ul = this.original_content_fragment.children(),
+        li = ul.children('li.' + repo.replace(/\//, '_'));
+    if (li[0]) {
+      li.children('div.description').remove();
+      this.addDescription(li, description);
     }
   },
 
@@ -635,6 +642,7 @@ var RepoInfo = (function() {
         repos.push(key);
       }
     }
+    addStatusIndicator();
     getAndStoreReposData(repos)
   }
 
@@ -654,6 +662,7 @@ var RepoInfo = (function() {
         getAndStoreReposData(repos);
       }, 1000);
     } else {
+      removeStatusIndicator();
       finished_loading = true
       runFinishedLoadingCallbacks();
     }
@@ -669,6 +678,9 @@ var RepoInfo = (function() {
   function storeRepoJSON(repo, json) {
     stored[repo] = json;
     saveStoredWatched();
+    $.each(RepoSearch.instances, function() {
+      this.updateStoredRepositories(repo, json);
+    })
   }
 
   function finishedLoading() {
@@ -687,6 +699,26 @@ var RepoInfo = (function() {
         console && console.error(e.message);
       }
     }
+  }
+
+  function addStatusIndicator() {
+    $.each(RepoSearch.instances, function() {
+      var div = $(document.createElement('div'))
+          .addClass('status_indicator')
+          .css('color', '#666')
+          .text('Updating Repository Descriptions...');
+      var image = $(new Image())
+          .attr('src', '/images/modules/ajax/indicator.gif')
+          .css('float', 'right');
+      div.append(image);
+      this.repos.children('.repo_search').before(div);
+    });
+  }
+
+  function removeStatusIndicator() {
+    $.each(RepoSearch.instances, function() {
+      this.repos.children('div.status_indicator').remove();
+    });
   }
 
   return {
@@ -770,21 +802,23 @@ var UserInfo = (function() {
   }
 
 })()
-var Info = function() {
+var Info = (function() {
+  function init() {
 
-}
+  }
+
+  return {
+    init: init
+  }
+
+})();
 
 RepoInfo.onFinishedLoading(function() {
   UserInfo.init();
-  if (this.updated) {
-    $.each(RepoSearch.instances, function(i) {
-      this.updateStoredRepositories();
-    })
-  }
 })
 
 UserInfo.onFinishedLoading(function() {
-
+  Info.init();
 })
 
 RepoInfo.init();
