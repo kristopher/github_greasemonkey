@@ -657,7 +657,7 @@ var RepoInfo = (function() {
         repos.push(key);
       }
     }
-    addClickEventHandlers()
+    addTooltips()
     addStatusIndicator();
     getAndStoreReposData(repos)
   }
@@ -680,7 +680,7 @@ var RepoInfo = (function() {
     return fragment.childNodes[0].innerHTML;
   }
 
-  function addClickEventHandlers() {
+  function addTooltips() {
     var el
     $(current).each(function() {
       el = $(this)
@@ -788,11 +788,12 @@ var UserInfo = (function() {
   function init() {
     var users = [], key
     for(var i = 0; i < current_users.length; i++) {
-      key = $(current_users[i]).attr('href').replace(/^\//, '');
+      key = userIdFromUrl($(current_users[i]).attr('href'));
       if ((stored_users[key] === undefined) && (users.indexOf(key) === -1)) {
         users.push(key);
       }
     }
+    addTooltips();
     getAndStoreUsersData(users);
   }
 
@@ -802,6 +803,38 @@ var UserInfo = (function() {
 
   function saveStoredUsers() {
     localStorage.setItem('users', JSON.stringify(stored_users));
+  }
+
+  function userIdFromUrl(url) {
+    return url.replace(/^\//, '');
+  }
+
+  function userJSONToHTML(repo) {
+    var div,
+        fragment = document.createDocumentFragment(),
+        wrapper = $(fragment.appendChild(document.createElement('div'))),
+        json = stored_users[repo];
+    for(var property in json) {
+      div = $(document.createElement('div'))
+        .append($(document.createElement('span')).html(property + ':'))
+        .append($(document.createElement('span')).html(json[property]))
+      wrapper.append(div)
+    }
+    return fragment.childNodes[0].innerHTML;
+  }
+
+  function addTooltips() {
+    var el
+    current_users.each(function() {
+      el = $(this)
+      el.tooltip({
+        showURL: false,
+        bodyHandler: function() {
+          var user_id = UserInfo.userIdFromUrl(el.attr('href'))
+          return UserInfo.userJSONToHTML(user_id);
+        }
+      }, function() {});
+    })
   }
 
   function getAndStoreUsersData(users) {
@@ -848,7 +881,9 @@ var UserInfo = (function() {
   return {
     init: init,
     finishedLoading: finishedLoading,
-    onFinishedLoading: onFinishedLoading
+    onFinishedLoading: onFinishedLoading,
+    userIdFromUrl: userIdFromUrl,
+    userJSONToHTML: userJSONToHTML
   }
 
 })()
