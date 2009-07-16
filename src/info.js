@@ -6,10 +6,14 @@ var Info = (function() {
     left: 0; \n\
     z-index: 3; \n\
     display: none; \n\
-    background: #F0F0F0; \n\
-    border: 5px solid #D8D8D8; \n\
+    background: #FFFEEB; \n\
+    border: 5px solid #F7CA75; \n\
     color: #666; \n\
     padding: 7px; \n\
+    font-weight: bold; \n\
+    -moz-border-radius-topright: 1em; \n\
+    -moz-border-radius-bottomright: 1em; \n\
+    -moz-border-radius-bottomleft: 1em; \n\
   } \n\
     \n\
   .tooltip div { \n\
