@@ -14,4 +14,6 @@ This script also adds an analyze link or button in several places.  At the top r
 
 To install, you should simply [click this link](http://cloud.github.com/downloads/kristopher/github_greasemonkey/github_greasemonkey.user.js).
 
-This script is still in heavy development.  When it reaches some sort of slow-down or final-release state, it will get pushed to userscripts.org.
+(That is, assuming you have [GreaseMonkey](https://addons.mozilla.org/en-US/firefox/addon/748) installed.)
+
+This script is still in heavy development.  When it reaches some sort of slow-down or final-release state, it will get pushed to [userscripts.org](http://userscripts.org/).
