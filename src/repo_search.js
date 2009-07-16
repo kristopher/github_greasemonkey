@@ -145,7 +145,7 @@ RepoSearch.InstanceMethods = {
   },
   
   addDescription: function(li, description) {
-    if (description !== '') {
+    if (description != null && description != '') {
       var div = $(document.createElement('div'))
         .addClass('description')
         .css({'border-top': '1px solid #333', 'margin-top': '5px', 'padding': '2px 5px 2px 5px'})
