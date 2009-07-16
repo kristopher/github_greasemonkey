@@ -83,7 +83,7 @@ var RepoInfo = (function() {
       var el = $(this);
       RepoInfo.addTooltip(el);
       el.triggerHandler('mouseover');
-    }, function() {})
+    })
   }
   
   function addTooltip(el) {
