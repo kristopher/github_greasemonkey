@@ -723,7 +723,7 @@ var RepoInfo = (function() {
       var el = $(this);
       RepoInfo.addTooltip(el);
       el.triggerHandler('mouseover');
-    }, function() {})
+    })
   }
 
   function addTooltip(el) {
@@ -909,6 +909,13 @@ var UserInfo = (function() {
     for(var i = 0; i < current_users.length; i++) {
       addTooltip($(current_users[i]));
     }
+    $('.repos.watching li > a').live('mouseover', function() {
+      //TODO better solution.
+      var el = $(this);
+      RepoInfo.addTooltip(el);
+      el.triggerHandler('mouseover');
+    })
+
   }
 
   function addTooltip(el) {
