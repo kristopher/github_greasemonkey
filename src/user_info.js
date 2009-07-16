@@ -30,14 +30,16 @@ var UserInfo = (function() {
   }
 
   function userJSONToHTML(repo) {
-    var key, value, tr,
-        table = $(document.createElement('table')),
-        fragment = document.createDocumentFragment(),
-        wrapper = $(fragment.appendChild(document.createElement('div'))),
-        json = stored_users[repo];
-    wrapper.append(table);
-    for(var property in json) {      
-      if (property !== 'url') {
+    var json = stored_users[repo];
+    if (json) {
+      var key, value, tr, property,
+          table = $(document.createElement('table')),
+          fragment = document.createDocumentFragment(),
+          wrapper = $(fragment.appendChild(document.createElement('div'))),
+          keys = orderedJSONKeysForDisplay();
+      wrapper.append(table);
+      for(var i = 0; i < keys.length; i++) {      
+        property = keys[i];
         key = printedKeyForProperty(property);
         value = printedValueForProperty(property, json[property])
         tr = $(document.createElement('tr'))
@@ -45,8 +47,14 @@ var UserInfo = (function() {
           .append($(document.createElement('td')).html(value));
         table.append(tr);        
       }
+      return fragment.childNodes[0].innerHTML;      
+    } else {
+      return 'loading...';
     }
-    return fragment.childNodes[0].innerHTML;
+  }
+
+  function orderedJSONKeysForDisplay() {
+    return ['name', 'email', 'company', 'location', 'blog', 'followers_count', 'following_count', 'public_repo_count', 'public_gist_count', 'created_at'];
   }
 
   function printedKeyForProperty(key) {
@@ -54,15 +62,17 @@ var UserInfo = (function() {
   }
   
   function printedValueForProperty(key, value) {
-    if (value == null) {
+    if (typeof value === 'string') {
+      value = $.trim(value);      
+    }
+    if (value == null || value === '') {
       return 'N/A'
     } else {
       switch(key) {
         case 'created_at':
-          //TODO make pretty
-          return value;
+          return new Date(value).toLocaleDateString();
         case 'blog':
-          return ('<a href="' + value + '">' + value + '</a>');
+          return ('<a href="' + value + '">' + value.substr(0, 50) + '...' + '</a>');
         default:
           return String(value);
       }      
@@ -70,19 +80,20 @@ var UserInfo = (function() {
   }
   
   function addTooltips() {
-    for(var i = 0; i < current_users.length; i++) {
-      addTooltip($(current_users[i]));
+    var feed_users = $('div.alert div.title > a:first-child, div.alert.member_add div.title > a:nth-child(3), a.committer');
+    for(var i = 0; i < feed_users.length; i++) {
+      addTooltip($(feed_users[i]));
     }
   }
   
   function addTooltip(el) {
-    el.tooltip({
-      showURL: false,
-      bodyHandler: function() {
-        var user_id = UserInfo.userIdFromUrl(el.attr('href'))          
-        return UserInfo.userJSONToHTML(user_id);
+    el.simpletip({
+      content: '',
+      onBeforeShow: function() {        
+        var user_id = UserInfo.userIdFromUrl(el.attr('href'));
+        this.update(UserInfo.userJSONToHTML(user_id));
       }
-    }, function() {});    
+    });    
   }
 
   function getAndStoreUsersData(users) {
@@ -131,7 +142,8 @@ var UserInfo = (function() {
     finishedLoading: finishedLoading,
     onFinishedLoading: onFinishedLoading,
     userIdFromUrl: userIdFromUrl,
-    userJSONToHTML: userJSONToHTML
+    userJSONToHTML: userJSONToHTML,
+    addTooltip: addTooltip
   }
 
 })()

@@ -1,19 +1,29 @@
 var Info = (function() {
   var tooltip_styles = '\
-  #tooltip { \n\
-    text-align: left; \n\
-	  position: absolute; \n\
-	  z-index: 3000; \n\
-	  border: 1px solid #111; \n\
-	  background-color: #eee; \n\
-	  padding: 5px; \n\
-	  opacity: 0.85; \n\
+  .tooltip { \n\ 
+    position: absolute; \n\
+    top: 0; \n\
+    left: 0; \n\
+    z-index: 3; \n\
+    display: none; \n\
+    background: #F0F0F0; \n\
+    border: 5px solid #D8D8D8; \n\
+    color: #666; \n\
+    padding: 7px; \n\
   } \n\
     \n\
-  #tooltip h3, #tooltip div { margin: 0; }\n\
-  #tooltip td { padding-right: 5px }\n';
-  
-  
+  .tooltip div { \n\
+    margin-top: 10px; \n\
+    max-width: 400px; \n\
+    min-width: 300px; \n\
+    border-top: \n\
+    2px solid #666 \n\
+  } \n\
+    \n\
+  .tooltip td { padding: 1px 10px; 1px 0 } \n\
+  .tooltip p { padding: 15px } \n';
+
+
   function init() {
     var style = $(document.createElement('style')).html(tooltip_styles);        
     $('head').append(style);
