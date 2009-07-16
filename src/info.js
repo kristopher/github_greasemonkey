@@ -10,7 +10,8 @@ var Info = (function() {
 	  opacity: 0.85; \n\
   } \n\
     \n\
-  #tooltip h3, #tooltip div { margin: 0; }\n';
+  #tooltip h3, #tooltip div { margin: 0; }\n\
+  #tooltip td { padding-right: 5px }\n';
   
   
   function init() {

@@ -27,33 +27,62 @@ var RepoInfo = (function() {
   }
 
   function repoJSONToHTML(repo) {
-    var div,
+    var key, value, tr,
+        table = $(document.createElement('table')),
         fragment = document.createDocumentFragment(),
         wrapper = $(fragment.appendChild(document.createElement('div'))),
         json = stored[repo];
-    for(var property in json) {
-      div = $(document.createElement('div'))
-        .append($(document.createElement('span')).html(property + ':'))
-        .append($(document.createElement('span')).html(json[property]))
-      wrapper.append(div)
+    wrapper.append(table);
+    for(var property in json) {      
+      if (property !== 'url') {
+        key = printedKeyForProperty(property);
+        value = printedValueForProperty(property, json[property])
+        tr = $(document.createElement('tr'))
+          .append($(document.createElement('td')).html(key))
+          .append($(document.createElement('td')).html(value));
+        table.append(tr);        
+      }
     }
     return fragment.childNodes[0].innerHTML;
   }
   
-  function addTooltips() {
-    var el
-    $(current).each(function() {
-      el = $(this)
-      el.tooltip({
-        showURL: false,
-        bodyHandler: function() {
-          var repo_id = RepoInfo.repoIdFromUrl(el.attr('href'))          
-          return RepoInfo.repoJSONToHTML(repo_id);
-        }
-      }, function() {});
-    })
+  function printedKeyForProperty(key) {
+    return (key[0].toUpperCase() + key.substr(1) + ':').replace(/_/g, ' ');
   }
   
+  function printedValueForProperty(key, value) {
+    //TODO Dry
+    if (value == null) {
+      return 'N/A'
+    } else {
+      switch(key) {
+        case 'homepage':
+          return ('<a href="' + value + '">' + value + '</a>');
+        case 'fork':
+          return (value ? 'No' : 'Yes');
+        case 'private':
+          return (value ? 'No' : 'Yes');
+        default:
+          return String(value);
+      }      
+    }
+  }
+  
+  function addTooltips() {
+    for(var i = 0; i < current.length; i++) {
+      addTooltip($(current[i]));
+    }
+  }
+  
+  function addTooltip(el) {
+    el.tooltip({
+      showURL: false,
+      bodyHandler: function() {
+        var repo_id = RepoInfo.repoIdFromUrl(el.attr('href'))          
+        return RepoInfo.repoJSONToHTML(repo_id);
+      }
+    }, function() {});    
+  }
   function loadStoredWatched() {
     return JSON.parse(localStorage.getItem('repositories') || "{}" )      
   }

@@ -30,33 +30,61 @@ var UserInfo = (function() {
   }
 
   function userJSONToHTML(repo) {
-    var div,
+    var key, value, tr,
+        table = $(document.createElement('table')),
         fragment = document.createDocumentFragment(),
         wrapper = $(fragment.appendChild(document.createElement('div'))),
         json = stored_users[repo];
-    for(var property in json) {
-      div = $(document.createElement('div'))
-        .append($(document.createElement('span')).html(property + ':'))
-        .append($(document.createElement('span')).html(json[property]))
-      wrapper.append(div)
+    wrapper.append(table);
+    for(var property in json) {      
+      if (property !== 'url') {
+        key = printedKeyForProperty(property);
+        value = printedValueForProperty(property, json[property])
+        tr = $(document.createElement('tr'))
+          .append($(document.createElement('td')).html(key))
+          .append($(document.createElement('td')).html(value));
+        table.append(tr);        
+      }
     }
     return fragment.childNodes[0].innerHTML;
   }
-  
-  function addTooltips() {
-    var el
-    current_users.each(function() {
-      el = $(this)
-      el.tooltip({
-        showURL: false,
-        bodyHandler: function() {
-          var user_id = UserInfo.userIdFromUrl(el.attr('href'))          
-          return UserInfo.userJSONToHTML(user_id);
-        }
-      }, function() {});
-    })
+
+  function printedKeyForProperty(key) {
+    return (key[0].toUpperCase() + key.substr(1) + ':').replace(/_/g, ' ');
   }
   
+  function printedValueForProperty(key, value) {
+    if (value == null) {
+      return 'N/A'
+    } else {
+      switch(key) {
+        case 'created_at':
+          //TODO make pretty
+          return value;
+        case 'blog':
+          return ('<a href="' + value + '">' + value + '</a>');
+        default:
+          return String(value);
+      }      
+    }
+  }
+  
+  function addTooltips() {
+    for(var i = 0; i < current_users.length; i++) {
+      addTooltip($(current_users[i]));
+    }
+  }
+  
+  function addTooltip(el) {
+    el.tooltip({
+      showURL: false,
+      bodyHandler: function() {
+        var user_id = UserInfo.userIdFromUrl(el.attr('href'))          
+        return UserInfo.userJSONToHTML(user_id);
+      }
+    }, function() {});    
+  }
+
   function getAndStoreUsersData(users) {
     if (users.length > 0) {
       getAndStoreUserData(users.pop())
