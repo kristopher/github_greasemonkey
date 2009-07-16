@@ -895,8 +895,7 @@ var UserInfo = (function() {
     } else {
       switch(key) {
         case 'created_at':
-          //TODO make pretty
-          return value;
+          return new Date(value).toDateString();
         case 'blog':
           return ('<a href="' + value + '">' + value + '</a>');
         default:
