@@ -667,25 +667,32 @@ var RepoInfo = (function() {
   function repoJSONToHTML(repo) {
     var json = stored[repo];
     if (json) {
-      var key, value, tr,
+      var key, value, tr, property, div,
           table = $(document.createElement('table')),
           fragment = document.createDocumentFragment(),
-          wrapper = $(fragment.appendChild(document.createElement('div')));
+          wrapper = $(fragment.appendChild(document.createElement('div'))),
+          keys = orderedJSONKeysForDisplay();
       wrapper.append(table);
-      for(var property in json) {
-        if (property !== 'url') {
-          key = printedKeyForProperty(property);
-          value = printedValueForProperty(property, json[property])
-          tr = $(document.createElement('tr'))
-            .append($(document.createElement('td')).html(key))
-            .append($(document.createElement('td')).html(value));
-          table.append(tr);
-        }
+      for(var i = 0; i < keys.length; i++) {
+        property = keys[i]
+        key = printedKeyForProperty(property);
+        value = printedValueForProperty(property, json[property])
+        tr = $(document.createElement('tr'))
+          .append($(document.createElement('td')).html(key))
+          .append($(document.createElement('td')).html(value));
+        table.append(tr);
       }
+      div = $(document.createElement('div'))
+        .append($(document.createElement('p')).html(printedValueForProperty('description', json['description'])));
+      wrapper.append(div);
       return fragment.childNodes[0].innerHTML;
     } else {
       return 'loading...';
     }
+  }
+
+  function orderedJSONKeysForDisplay() {
+    return ['name', 'owner', 'watchers', 'forks', 'open_issues', 'fork', 'private', 'homepage'];
   }
 
   function printedKeyForProperty(key) {
@@ -702,7 +709,7 @@ var RepoInfo = (function() {
     } else {
       switch(key) {
         case 'homepage':
-          return ('<a href="' + value + '">' + value + '</a>');
+          return ('<a href="' + value + '">' + value.substr(0, 50) + '...' + '</a>');
         case 'fork':
           return (value ? 'Yes' : 'No');
         case 'private':
@@ -855,25 +862,29 @@ var UserInfo = (function() {
   function userJSONToHTML(repo) {
     var json = stored_users[repo];
     if (json) {
-      var key, value, tr,
+      var key, value, tr, property,
           table = $(document.createElement('table')),
           fragment = document.createDocumentFragment(),
-          wrapper = $(fragment.appendChild(document.createElement('div')));
+          wrapper = $(fragment.appendChild(document.createElement('div'))),
+          keys = orderedJSONKeysForDisplay();
       wrapper.append(table);
-      for(var property in json) {
-        if (property !== 'url') {
-          key = printedKeyForProperty(property);
-          value = printedValueForProperty(property, json[property])
-          tr = $(document.createElement('tr'))
-            .append($(document.createElement('td')).html(key))
-            .append($(document.createElement('td')).html(value));
-          table.append(tr);
-        }
+      for(var i = 0; i < keys.length; i++) {
+        property = keys[i];
+        key = printedKeyForProperty(property);
+        value = printedValueForProperty(property, json[property])
+        tr = $(document.createElement('tr'))
+          .append($(document.createElement('td')).html(key))
+          .append($(document.createElement('td')).html(value));
+        table.append(tr);
       }
       return fragment.childNodes[0].innerHTML;
     } else {
       return 'loading...';
     }
+  }
+
+  function orderedJSONKeysForDisplay() {
+    return ['name', 'email', 'company', 'location', 'blog', 'followers_count', 'following_count', 'public_repo_count', 'public_gist_count', 'created_at'];
   }
 
   function printedKeyForProperty(key) {
@@ -891,7 +902,7 @@ var UserInfo = (function() {
         case 'created_at':
           return new Date(value).toLocaleDateString();
         case 'blog':
-          return ('<a href="' + value + '">' + value + '</a>');
+          return ('<a href="' + value + '">' + value.substr(0, 40) + '...' + '</a>');
         default:
           return String(value);
       }
@@ -979,8 +990,18 @@ var Info = (function() {
     color: #666; \n\
     padding: 7px; \n\
   } \n\
-    \
-  .tooltip td { padding: 1px 10px; 1px 0 } \n';
+    \n\
+  .tooltip div { \n\
+    margin-top: 10px; \n\
+    max-width: 400px; \n\
+    min-width: 300px; \n\
+    border-top: \n\
+    2px solid #666 \n\
+  } \n\
+    \n\
+  .tooltip td { padding: 1px 10px; 1px 0 } \n\
+  .tooltip p { padding: 15px } \n';
+
 
   function init() {
     var style = $(document.createElement('style')).html(tooltip_styles);
