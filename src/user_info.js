@@ -87,9 +87,18 @@ var UserInfo = (function() {
   }
   
   function addTooltip(el) {
-    el.simpletip({
+    var span = el.parent()
+    if (!span.hasClass('tooltip_wrapper')) {
+      span = $(document.createElement('span'))
+        .addClass('tooltip_wrapper')
+        .css('background', '#fff');
+      el.wrap(span);
+    }
+    var tooltip = el.parent().simpletip({
       content: '',
-      onBeforeShow: function() {        
+      position: 'right',
+      offset: [5, 0],
+      onShow: function() {        
         var user_id = UserInfo.userIdFromUrl(el.attr('href'));
         this.update(UserInfo.userJSONToHTML(user_id));
       }
