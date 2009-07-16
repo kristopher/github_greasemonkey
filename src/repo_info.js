@@ -1,7 +1,6 @@
 var RepoInfo = (function() {
   var current,
-      current_watched = $('.repos.watching li.public b > a').get(),
-      current_owned = $('#repo_listing li.public b > a').get(),
+      current_watched = $('div.repos li b > a').get(),
       current_feed = $('div.alert.watch_started div.title > a:nth-child(3), div.alert.push div.title > a:nth-child(3), div.alert.member_add div.title > a:nth-child(4)').get(),
       stored = loadStoredWatched(),
       api_path = '/api/v2/json/repos/show/',
@@ -9,7 +8,7 @@ var RepoInfo = (function() {
       on_finished_loading = [];
   
   function init() {
-    current = current_watched.concat(current_owned).concat(current_feed);
+    current = current_watched.concat(current_feed);
     var repos = [], key
     for(var i = 0; i < current.length; i++) {
       key = repoIdFromUrl($(current[i]).attr('href'));
@@ -27,23 +26,27 @@ var RepoInfo = (function() {
   }
 
   function repoJSONToHTML(repo) {
-    var key, value, tr,
-        table = $(document.createElement('table')),
-        fragment = document.createDocumentFragment(),
-        wrapper = $(fragment.appendChild(document.createElement('div'))),
-        json = stored[repo];
-    wrapper.append(table);
-    for(var property in json) {      
-      if (property !== 'url') {
-        key = printedKeyForProperty(property);
-        value = printedValueForProperty(property, json[property])
-        tr = $(document.createElement('tr'))
-          .append($(document.createElement('td')).html(key))
-          .append($(document.createElement('td')).html(value));
-        table.append(tr);        
+    var json = stored[repo];
+    if (json) {
+      var key, value, tr,
+          table = $(document.createElement('table')),
+          fragment = document.createDocumentFragment(),
+          wrapper = $(fragment.appendChild(document.createElement('div')));
+      wrapper.append(table);
+      for(var property in json) {      
+        if (property !== 'url') {
+          key = printedKeyForProperty(property);
+          value = printedValueForProperty(property, json[property])
+          tr = $(document.createElement('tr'))
+            .append($(document.createElement('td')).html(key))
+            .append($(document.createElement('td')).html(value));
+          table.append(tr);        
+        }
       }
+      return fragment.childNodes[0].innerHTML;      
+    } else {
+      return 'loading...';
     }
-    return fragment.childNodes[0].innerHTML;
   }
   
   function printedKeyForProperty(key) {
@@ -52,16 +55,19 @@ var RepoInfo = (function() {
   
   function printedValueForProperty(key, value) {
     //TODO Dry
-    if (value == null) {
+    if (typeof value === 'string') {
+      value = $.trim(value);      
+    }
+    if (value == null || value === '') {
       return 'N/A'
     } else {
       switch(key) {
         case 'homepage':
           return ('<a href="' + value + '">' + value + '</a>');
         case 'fork':
-          return (value ? 'No' : 'Yes');
+          return (value ? 'Yes' : 'No');
         case 'private':
-          return (value ? 'No' : 'Yes');
+          return (value ? 'Yes' : 'No');
         default:
           return String(value);
       }      
@@ -69,9 +75,15 @@ var RepoInfo = (function() {
   }
   
   function addTooltips() {
-    for(var i = 0; i < current.length; i++) {
-      addTooltip($(current[i]));
+    for(var i = 0; i < current_feed.length; i++) {
+      addTooltip($(current_feed[i]));
     }
+    $('div.repos b > a').live('mouseover', function() {
+      //TODO better solution.
+      var el = $(this);
+      RepoInfo.addTooltip(el);
+      el.triggerHandler('mouseover');
+    }, function() {})
   }
   
   function addTooltip(el) {
@@ -106,9 +118,16 @@ var RepoInfo = (function() {
   }
   
   function getAndStoreRepoData(repo) {
-    // TODO handle api("error": [{"error": "repository not found"}]}) reponses
     $.getJSON(api_path + repo, function(json) {
-      storeRepoJSON(repo, json['repository']);
+      if (json['error']) {
+        data = {
+          'private': true,
+          'description': null
+        };
+      } else {
+        data = json['repository'];
+      }
+      storeRepoJSON(repo, data);
     });
   }
   
@@ -163,7 +182,8 @@ var RepoInfo = (function() {
     finishedLoading: finishedLoading,
     onFinishedLoading: onFinishedLoading,
     repoIdFromUrl: repoIdFromUrl,
-    repoJSONToHTML: repoJSONToHTML
+    repoJSONToHTML: repoJSONToHTML,
+    addTooltip: addTooltip
   }
 
 })()

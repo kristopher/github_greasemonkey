@@ -30,23 +30,27 @@ var UserInfo = (function() {
   }
 
   function userJSONToHTML(repo) {
-    var key, value, tr,
-        table = $(document.createElement('table')),
-        fragment = document.createDocumentFragment(),
-        wrapper = $(fragment.appendChild(document.createElement('div'))),
-        json = stored_users[repo];
-    wrapper.append(table);
-    for(var property in json) {      
-      if (property !== 'url') {
-        key = printedKeyForProperty(property);
-        value = printedValueForProperty(property, json[property])
-        tr = $(document.createElement('tr'))
-          .append($(document.createElement('td')).html(key))
-          .append($(document.createElement('td')).html(value));
-        table.append(tr);        
+    var json = stored_users[repo];
+    if (json) {
+      var key, value, tr,
+          table = $(document.createElement('table')),
+          fragment = document.createDocumentFragment(),
+          wrapper = $(fragment.appendChild(document.createElement('div')));
+      wrapper.append(table);
+      for(var property in json) {      
+        if (property !== 'url') {
+          key = printedKeyForProperty(property);
+          value = printedValueForProperty(property, json[property])
+          tr = $(document.createElement('tr'))
+            .append($(document.createElement('td')).html(key))
+            .append($(document.createElement('td')).html(value));
+          table.append(tr);        
+        }
       }
+      return fragment.childNodes[0].innerHTML;      
+    } else {
+      return 'loading...';
     }
-    return fragment.childNodes[0].innerHTML;
   }
 
   function printedKeyForProperty(key) {
@@ -54,7 +58,10 @@ var UserInfo = (function() {
   }
   
   function printedValueForProperty(key, value) {
-    if (value == null) {
+    if (typeof value === 'string') {
+      value = $.trim(value);      
+    }
+    if (value == null || value === '') {
       return 'N/A'
     } else {
       switch(key) {
