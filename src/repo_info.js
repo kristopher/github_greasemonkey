@@ -93,7 +93,7 @@ var RepoInfo = (function() {
         var repo_id = RepoInfo.repoIdFromUrl(el.attr('href'))          
         return RepoInfo.repoJSONToHTML(repo_id);
       }
-    }, function() {});    
+    });    
   }
   function loadStoredWatched() {
     return JSON.parse(localStorage.getItem('repositories') || "{}" )      

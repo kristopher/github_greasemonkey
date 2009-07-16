@@ -733,7 +733,7 @@ var RepoInfo = (function() {
         var repo_id = RepoInfo.repoIdFromUrl(el.attr('href'))
         return RepoInfo.repoJSONToHTML(repo_id);
       }
-    }, function() {});
+    });
   }
   function loadStoredWatched() {
     return JSON.parse(localStorage.getItem('repositories') || "{}" )
@@ -906,13 +906,14 @@ var UserInfo = (function() {
   }
 
   function addTooltips() {
-    for(var i = 0; i < current_users.length; i++) {
-      addTooltip($(current_users[i]));
+    var feed_users = $('div.alert div.title > a:first-child, div.alert.member_add div.title > a:nth-child(3), a.committer');
+    for(var i = 0; i < feed_users.length; i++) {
+      addTooltip($(feed_users[i]));
     }
     $('.repos.watching li > a').live('mouseover', function() {
       //TODO better solution.
       var el = $(this);
-      RepoInfo.addTooltip(el);
+      UserInfo.addTooltip(el);
       el.triggerHandler('mouseover');
     })
 
@@ -922,10 +923,10 @@ var UserInfo = (function() {
     el.tooltip({
       showURL: false,
       bodyHandler: function() {
-        var user_id = UserInfo.userIdFromUrl(el.attr('href'))
+        var user_id = UserInfo.userIdFromUrl($(this).attr('href'))
         return UserInfo.userJSONToHTML(user_id);
       }
-    }, function() {});
+    });
   }
 
   function getAndStoreUsersData(users) {
@@ -974,7 +975,8 @@ var UserInfo = (function() {
     finishedLoading: finishedLoading,
     onFinishedLoading: onFinishedLoading,
     userIdFromUrl: userIdFromUrl,
-    userJSONToHTML: userJSONToHTML
+    userJSONToHTML: userJSONToHTML,
+    addTooltip: addTooltip
   }
 
 })()
