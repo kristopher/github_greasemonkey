@@ -667,33 +667,62 @@ var RepoInfo = (function() {
   }
 
   function repoJSONToHTML(repo) {
-    var div,
+    var key, value, tr,
+        table = $(document.createElement('table')),
         fragment = document.createDocumentFragment(),
         wrapper = $(fragment.appendChild(document.createElement('div'))),
         json = stored[repo];
+    wrapper.append(table);
     for(var property in json) {
-      div = $(document.createElement('div'))
-        .append($(document.createElement('span')).html(property + ':'))
-        .append($(document.createElement('span')).html(json[property]))
-      wrapper.append(div)
+      if (property !== 'url') {
+        key = printedKeyForProperty(property);
+        value = printedValueForProperty(property, json[property])
+        tr = $(document.createElement('tr'))
+          .append($(document.createElement('td')).html(key))
+          .append($(document.createElement('td')).html(value));
+        table.append(tr);
+      }
     }
     return fragment.childNodes[0].innerHTML;
   }
 
-  function addTooltips() {
-    var el
-    $(current).each(function() {
-      el = $(this)
-      el.tooltip({
-        showURL: false,
-        bodyHandler: function() {
-          var repo_id = RepoInfo.repoIdFromUrl(el.attr('href'))
-          return RepoInfo.repoJSONToHTML(repo_id);
-        }
-      }, function() {});
-    })
+  function printedKeyForProperty(key) {
+    return (key[0].toUpperCase() + key.substr(1) + ':').replace(/_/g, ' ');
   }
 
+  function printedValueForProperty(key, value) {
+    //TODO Dry
+    if (value == null) {
+      return 'N/A'
+    } else {
+      switch(key) {
+        case 'homepage':
+          return ('<a href="' + value + '">' + value + '</a>');
+        case 'fork':
+          return (value ? 'No' : 'Yes');
+        case 'private':
+          return (value ? 'No' : 'Yes');
+        default:
+          return String(value);
+      }
+    }
+  }
+
+  function addTooltips() {
+    for(var i = 0; i < current.length; i++) {
+      addTooltip($(current[i]));
+    }
+  }
+
+  function addTooltip(el) {
+    el.tooltip({
+      showURL: false,
+      bodyHandler: function() {
+        var repo_id = RepoInfo.repoIdFromUrl(el.attr('href'))
+        return RepoInfo.repoJSONToHTML(repo_id);
+      }
+    }, function() {});
+  }
   function loadStoredWatched() {
     return JSON.parse(localStorage.getItem('repositories') || "{}" )
   }
@@ -810,31 +839,59 @@ var UserInfo = (function() {
   }
 
   function userJSONToHTML(repo) {
-    var div,
+    var key, value, tr,
+        table = $(document.createElement('table')),
         fragment = document.createDocumentFragment(),
         wrapper = $(fragment.appendChild(document.createElement('div'))),
         json = stored_users[repo];
+    wrapper.append(table);
     for(var property in json) {
-      div = $(document.createElement('div'))
-        .append($(document.createElement('span')).html(property + ':'))
-        .append($(document.createElement('span')).html(json[property]))
-      wrapper.append(div)
+      if (property !== 'url') {
+        key = printedKeyForProperty(property);
+        value = printedValueForProperty(property, json[property])
+        tr = $(document.createElement('tr'))
+          .append($(document.createElement('td')).html(key))
+          .append($(document.createElement('td')).html(value));
+        table.append(tr);
+      }
     }
     return fragment.childNodes[0].innerHTML;
   }
 
+  function printedKeyForProperty(key) {
+    return (key[0].toUpperCase() + key.substr(1) + ':').replace(/_/g, ' ');
+  }
+
+  function printedValueForProperty(key, value) {
+    if (value == null) {
+      return 'N/A'
+    } else {
+      switch(key) {
+        case 'created_at':
+          //TODO make pretty
+          return value;
+        case 'blog':
+          return ('<a href="' + value + '">' + value + '</a>');
+        default:
+          return String(value);
+      }
+    }
+  }
+
   function addTooltips() {
-    var el
-    current_users.each(function() {
-      el = $(this)
-      el.tooltip({
-        showURL: false,
-        bodyHandler: function() {
-          var user_id = UserInfo.userIdFromUrl(el.attr('href'))
-          return UserInfo.userJSONToHTML(user_id);
-        }
-      }, function() {});
-    })
+    for(var i = 0; i < current_users.length; i++) {
+      addTooltip($(current_users[i]));
+    }
+  }
+
+  function addTooltip(el) {
+    el.tooltip({
+      showURL: false,
+      bodyHandler: function() {
+        var user_id = UserInfo.userIdFromUrl(el.attr('href'))
+        return UserInfo.userJSONToHTML(user_id);
+      }
+    }, function() {});
   }
 
   function getAndStoreUsersData(users) {
@@ -899,7 +956,8 @@ var Info = (function() {
 	  opacity: 0.85; \n\
   } \n\
     \n\
-  #tooltip h3, #tooltip div { margin: 0; }\n';
+  #tooltip h3, #tooltip div { margin: 0; }\n\
+  #tooltip td { padding-right: 5px }\n';
 
 
   function init() {
