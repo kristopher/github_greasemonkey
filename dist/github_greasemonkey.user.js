@@ -693,13 +693,16 @@ var RepoInfo = (function() {
     //TODO Dry
     if (typeof value === 'string') {
       value = $.trim(value);
+      if (value.length > 40) {
+        value = value.substr(0, 40) + '...';
+      }
     }
     if (value == null || value === '') {
       return 'N/A'
     } else {
       switch(key) {
         case 'homepage':
-          return ('<a href="' + value + '">' + value.substr(0, 50) + '...' + '</a>');
+          return ('<a href="' + value + '">' + value + '</a>');
         case 'fork':
           return (value ? 'Yes' : 'No');
         case 'private':
@@ -894,6 +897,9 @@ var UserInfo = (function() {
   function printedValueForProperty(key, value) {
     if (typeof value === 'string') {
       value = $.trim(value);
+      if (value.length > 40) {
+        value = value.substr(0, 40) + '...';
+      }
     }
     if (value == null || value === '') {
       return 'N/A'
@@ -902,7 +908,7 @@ var UserInfo = (function() {
         case 'created_at':
           return new Date(value).toLocaleDateString();
         case 'blog':
-          return ('<a href="' + value + '">' + value.substr(0, 50) + '...' + '</a>');
+          return ('<a href="' + value + '">' + value  + '</a>');
         default:
           return String(value);
       }
