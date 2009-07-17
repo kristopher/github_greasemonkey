@@ -731,10 +731,10 @@ var RepoInfo = (function() {
 
     var tooltip = span.simpletip({
       content: '',
-      position: [span.offset().left, span.offset().top + 15],
       onShow: function() {
         var repo_id = RepoInfo.repoIdFromUrl(el.attr('href'))
         this.update(RepoInfo.repoJSONToHTML(repo_id));
+        this.setPos(span.offset().left, span.offset().top + 15);
       }
     });
   }
@@ -934,10 +934,10 @@ var UserInfo = (function() {
 
     var tooltip = span.simpletip({
       content: '',
-      position: [span.offset().left, span.offset().top + 15],
       onShow: function() {
         var user_id = UserInfo.userIdFromUrl(el.attr('href'));
         this.update(UserInfo.userJSONToHTML(user_id));
+        this.setPos(span.offset().left, span.offset().top + 15);
       }
     });
   }
