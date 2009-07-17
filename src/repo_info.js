@@ -65,14 +65,17 @@ var RepoInfo = (function() {
   function printedValueForProperty(key, value) {
     //TODO Dry
     if (typeof value === 'string') {
-      value = $.trim(value);      
+      value = $.trim(value);
+      if (value.length > 40) {
+        value = value.substr(0, 40) + '...';
+      }
     }
     if (value == null || value === '') {
       return 'N/A'
     } else {
       switch(key) {
         case 'homepage':
-          return ('<a href="' + value + '">' + value.substr(0, 50) + '...' + '</a>');
+          return ('<a href="' + value + '">' + value + '</a>');
         case 'fork':
           return (value ? 'Yes' : 'No');
         case 'private':
