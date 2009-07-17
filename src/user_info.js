@@ -93,11 +93,12 @@ var UserInfo = (function() {
         .addClass('tooltip_wrapper')
         .css('background', '#fff');
       el.wrap(span);
+      span = el.parent();
     }
-    var tooltip = el.parent().simpletip({
+    
+    var tooltip = span.simpletip({
       content: '',
-      position: 'right',
-      offset: [5, 0],
+      position: [span.offset().left, span.offset().top + 15],
       onShow: function() {        
         var user_id = UserInfo.userIdFromUrl(el.attr('href'));
         this.update(UserInfo.userJSONToHTML(user_id));

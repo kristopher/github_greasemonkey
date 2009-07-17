@@ -96,11 +96,12 @@ var RepoInfo = (function() {
         .addClass('tooltip_wrapper')
         .css('background', '#fff');
       el.wrap(span);
+      span = el.parent();
     }
-    var tooltip = el.parent().simpletip({
+    
+    var tooltip = span.simpletip({
       content: '',
-      position: 'right',
-      offset: [5, 0],
+      position: [span.offset().left, span.offset().top + 15],
       onShow: function() {        
         var repo_id = RepoInfo.repoIdFromUrl(el.attr('href'))
         this.update(RepoInfo.repoJSONToHTML(repo_id));
