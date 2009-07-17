@@ -672,7 +672,7 @@ var RepoInfo = (function() {
       }
       if (json['description']) {
         div = $(document.createElement('div'))
-          .append($(document.createElement('p')).html(printedValueForProperty('description', json['description'])));
+          .append($(document.createElement('p')).html(json['description']));
         wrapper.append(div);
       }
       return fragment.childNodes[0].innerHTML;
