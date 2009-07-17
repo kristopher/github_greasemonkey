@@ -12,7 +12,7 @@ The script also retrieves information about users and throws the info into a too
 
 ## Analyze
 
-This script also adds an analyze link or button in several places.  At the top right, where your gravatar and various personal links are located, is a link to your stats at analyze.github.com (i.e. http://analyze.github.com/mileszs).  Analyze.github.com is **not** affiliated with GitHub -- it's a project by [jqr](http://github.com/jqr) and [kristopher](http://github.com/kristopher). It presents stats via the GitHub API, such as aggragated traffic, forks, watchers (sparklines-style graphs available for all, so you can visualize the stats over time), as well as a list of suggested followers.
+This script also adds an analyze link or button in several places.  At the top right, where your gravatar and various personal links are located, is a link to your stats at analyze.github.com (e.g. http://analyze.github.com/mileszs).  Analyze.github.com is **not** affiliated with GitHub -- it's a project by [jqr](http://github.com/jqr) and [kristopher](http://github.com/kristopher). It presents stats via the GitHub API, such as aggragated traffic, forks, watchers (sparklines-style graphs available for all, so you can visualize the stats over time), as well as a list of suggested followers.
 
 ## Install
 
