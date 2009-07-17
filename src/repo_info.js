@@ -43,9 +43,11 @@ var RepoInfo = (function() {
           .append($(document.createElement('td')).html(value));
         table.append(tr);        
       }
-      div = $(document.createElement('div'))
-        .append($(document.createElement('p')).html(printedValueForProperty('description', json['description'])));
-      wrapper.append(div);
+      if (json['description']) {
+        div = $(document.createElement('div'))
+          .append($(document.createElement('p')).html(json['description']));
+        wrapper.append(div);        
+      }
       return fragment.childNodes[0].innerHTML;      
     } else {
       return 'loading...';
@@ -63,14 +65,17 @@ var RepoInfo = (function() {
   function printedValueForProperty(key, value) {
     //TODO Dry
     if (typeof value === 'string') {
-      value = $.trim(value);      
+      value = $.trim(value);
+      if (value.length > 40) {
+        value = value.substr(0, 40) + '...';
+      }
     }
     if (value == null || value === '') {
       return 'N/A'
     } else {
       switch(key) {
         case 'homepage':
-          return ('<a href="' + value + '">' + value.substr(0, 50) + '...' + '</a>');
+          return ('<a href="' + value + '">' + value + '</a>');
         case 'fork':
           return (value ? 'Yes' : 'No');
         case 'private':
@@ -88,10 +93,20 @@ var RepoInfo = (function() {
   }
   
   function addTooltip(el) {
-    el.simpletip({
+    var span = el.parent()
+    if (!span.hasClass('tooltip_wrapper')) {
+      span = $(document.createElement('span'))
+        .addClass('tooltip_wrapper')
+        .css('background', '#fff');
+      el.wrap(span);
+      span = el.parent();
+    }
+    
+    var tooltip = span.simpletip({
       content: '',
-      onBeforeShow: function() {        
-        var repo_id = RepoInfo.repoIdFromUrl(el.attr('href'))          
+      position: [span.offset().left, span.offset().top + 15],
+      onShow: function() {        
+        var repo_id = RepoInfo.repoIdFromUrl(el.attr('href'))
         this.update(RepoInfo.repoJSONToHTML(repo_id));
       }
     });    

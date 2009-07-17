@@ -64,6 +64,9 @@ var UserInfo = (function() {
   function printedValueForProperty(key, value) {
     if (typeof value === 'string') {
       value = $.trim(value);      
+      if (value.length > 40) {
+        value = value.substr(0, 40) + '...';
+      }
     }
     if (value == null || value === '') {
       return 'N/A'
@@ -72,7 +75,7 @@ var UserInfo = (function() {
         case 'created_at':
           return new Date(value).toLocaleDateString();
         case 'blog':
-          return ('<a href="' + value + '">' + value.substr(0, 50) + '...' + '</a>');
+          return ('<a href="' + value + '">' + value  + '</a>');
         default:
           return String(value);
       }      
@@ -87,9 +90,19 @@ var UserInfo = (function() {
   }
   
   function addTooltip(el) {
-    el.simpletip({
+    var span = el.parent()
+    if (!span.hasClass('tooltip_wrapper')) {
+      span = $(document.createElement('span'))
+        .addClass('tooltip_wrapper')
+        .css('background', '#fff');
+      el.wrap(span);
+      span = el.parent();
+    }
+    
+    var tooltip = span.simpletip({
       content: '',
-      onBeforeShow: function() {        
+      position: [span.offset().left, span.offset().top + 15],
+      onShow: function() {        
         var user_id = UserInfo.userIdFromUrl(el.attr('href'));
         this.update(UserInfo.userJSONToHTML(user_id));
       }

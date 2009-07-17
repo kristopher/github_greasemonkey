@@ -591,18 +591,6 @@ Analyze.Profile.prototype.initialize = function() {
 Analyze.Profile.prototype.addLinks = function() {
   var button = this.createButton(this.analyze_profile_path).children('a').css(this.button_box_link_style).end();
   this.button_box.append(button);
-  // TODO Decide whether to use
-  // var buttons, repo_name, repo_names = this.repo_buttons.siblings('div.title').find('a'),
-  // button = this.createButton(this.analyze_profile_path + '/')
-  //   .css(this.repo_button_style)
-  //   .children('a')
-  //   .css(this.repo_button_link_style)
-  //   .end();
-  // this.repo_buttons.append(button);
-  // buttons = this.repo_buttons.children('span.analyze').children('a');
-  // for(var i = 0; i < repo_names.length; i++) {
-  //   buttons[i].href = (buttons[i].href + repo_names[i].innerHTML);
-  // }
 }
 
 Analyze.Repository = function() {
@@ -682,9 +670,11 @@ var RepoInfo = (function() {
           .append($(document.createElement('td')).html(value));
         table.append(tr);
       }
-      div = $(document.createElement('div'))
-        .append($(document.createElement('p')).html(printedValueForProperty('description', json['description'])));
-      wrapper.append(div);
+      if (json['description']) {
+        div = $(document.createElement('div'))
+          .append($(document.createElement('p')).html(json['description']));
+        wrapper.append(div);
+      }
       return fragment.childNodes[0].innerHTML;
     } else {
       return 'loading...';
@@ -703,13 +693,16 @@ var RepoInfo = (function() {
     //TODO Dry
     if (typeof value === 'string') {
       value = $.trim(value);
+      if (value.length > 40) {
+        value = value.substr(0, 40) + '...';
+      }
     }
     if (value == null || value === '') {
       return 'N/A'
     } else {
       switch(key) {
         case 'homepage':
-          return ('<a href="' + value + '">' + value.substr(0, 50) + '...' + '</a>');
+          return ('<a href="' + value + '">' + value + '</a>');
         case 'fork':
           return (value ? 'Yes' : 'No');
         case 'private':
@@ -727,9 +720,19 @@ var RepoInfo = (function() {
   }
 
   function addTooltip(el) {
-    el.simpletip({
+    var span = el.parent()
+    if (!span.hasClass('tooltip_wrapper')) {
+      span = $(document.createElement('span'))
+        .addClass('tooltip_wrapper')
+        .css('background', '#fff');
+      el.wrap(span);
+      span = el.parent();
+    }
+
+    var tooltip = span.simpletip({
       content: '',
-      onBeforeShow: function() {
+      position: [span.offset().left, span.offset().top + 15],
+      onShow: function() {
         var repo_id = RepoInfo.repoIdFromUrl(el.attr('href'))
         this.update(RepoInfo.repoJSONToHTML(repo_id));
       }
@@ -894,6 +897,9 @@ var UserInfo = (function() {
   function printedValueForProperty(key, value) {
     if (typeof value === 'string') {
       value = $.trim(value);
+      if (value.length > 40) {
+        value = value.substr(0, 40) + '...';
+      }
     }
     if (value == null || value === '') {
       return 'N/A'
@@ -902,7 +908,7 @@ var UserInfo = (function() {
         case 'created_at':
           return new Date(value).toLocaleDateString();
         case 'blog':
-          return ('<a href="' + value + '">' + value.substr(0, 40) + '...' + '</a>');
+          return ('<a href="' + value + '">' + value  + '</a>');
         default:
           return String(value);
       }
@@ -917,9 +923,19 @@ var UserInfo = (function() {
   }
 
   function addTooltip(el) {
-    el.simpletip({
+    var span = el.parent()
+    if (!span.hasClass('tooltip_wrapper')) {
+      span = $(document.createElement('span'))
+        .addClass('tooltip_wrapper')
+        .css('background', '#fff');
+      el.wrap(span);
+      span = el.parent();
+    }
+
+    var tooltip = span.simpletip({
       content: '',
-      onBeforeShow: function() {
+      position: [span.offset().left, span.offset().top + 15],
+      onShow: function() {
         var user_id = UserInfo.userIdFromUrl(el.attr('href'));
         this.update(UserInfo.userJSONToHTML(user_id));
       }
@@ -985,10 +1001,14 @@ var Info = (function() {
     left: 0; \n\
     z-index: 3; \n\
     display: none; \n\
-    background: #F0F0F0; \n\
-    border: 5px solid #D8D8D8; \n\
+    background: #FFFEEB; \n\
+    border: 5px solid #F7CA75; \n\
     color: #666; \n\
     padding: 7px; \n\
+    font-weight: bold; \n\
+    -moz-border-radius-topright: 1em; \n\
+    -moz-border-radius-bottomright: 1em; \n\
+    -moz-border-radius-bottomleft: 1em; \n\
   } \n\
     \n\
   .tooltip div { \n\

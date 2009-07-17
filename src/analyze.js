@@ -97,18 +97,6 @@ Analyze.Profile.prototype.initialize = function() {
 Analyze.Profile.prototype.addLinks = function() {
   var button = this.createButton(this.analyze_profile_path).children('a').css(this.button_box_link_style).end();
   this.button_box.append(button);
-  // TODO Decide whether to use
-  // var buttons, repo_name, repo_names = this.repo_buttons.siblings('div.title').find('a'),
-  // button = this.createButton(this.analyze_profile_path + '/')
-  //   .css(this.repo_button_style)
-  //   .children('a')
-  //   .css(this.repo_button_link_style)
-  //   .end();
-  // this.repo_buttons.append(button);
-  // buttons = this.repo_buttons.children('span.analyze').children('a');
-  // for(var i = 0; i < repo_names.length; i++) {
-  //   buttons[i].href = (buttons[i].href + repo_names[i].innerHTML);
-  // }    
 }
 
 Analyze.Repository = function() {
