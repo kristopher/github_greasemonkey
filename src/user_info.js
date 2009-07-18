@@ -1,5 +1,5 @@
 var UserInfo = (function() {
-  var current_users = $('.repos.watching li > a, div.alert div.title > a:first-child, div.alert.member_add div.title > a:nth-child(3), a.committer'), 
+  var current_users = $('.repos.watching li > a, div.alert div.title > a:first-child, div.alert.member_add div.title > a:nth-child(3), a.committer, div.alert.follow a'), 
       stored_users = loadStoredUsers(),
       api_path = '/api/v2/json/user/show/',
       finished_loading = false,
@@ -83,7 +83,7 @@ var UserInfo = (function() {
   }
   
   function addTooltips() {
-    var feed_users = $('div.alert div.title > a:first-child, div.alert.member_add div.title > a:nth-child(3), a.committer');
+    var feed_users = $('div.alert.follow a, div.alert div.title > a:first-child, div.alert.member_add div.title > a:nth-child(3), a.committer');
     for(var i = 0; i < feed_users.length; i++) {
       addTooltip($(feed_users[i]));
     }
