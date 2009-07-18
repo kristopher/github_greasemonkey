@@ -107,7 +107,7 @@ var RepoInfo = (function() {
       onShow: function() {        
         var repo_id = RepoInfo.repoIdFromUrl(el.attr('href'))
         this.update(RepoInfo.repoJSONToHTML(repo_id));
-        this.setPos(span.offset().left, span.offset().top + 15);
+        this.setPos(span.offset().left, span.offset().top + 13);
       }
     });    
   }
