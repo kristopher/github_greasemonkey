@@ -734,7 +734,7 @@ var RepoInfo = (function() {
       onShow: function() {
         var repo_id = RepoInfo.repoIdFromUrl(el.attr('href'))
         this.update(RepoInfo.repoJSONToHTML(repo_id));
-        this.setPos(span.offset().left, span.offset().top + 15);
+        this.setPos(span.offset().left, span.offset().top + 13);
       }
     });
   }
@@ -937,7 +937,7 @@ var UserInfo = (function() {
       onShow: function() {
         var user_id = UserInfo.userIdFromUrl(el.attr('href'));
         this.update(UserInfo.userJSONToHTML(user_id));
-        this.setPos(span.offset().left, span.offset().top + 15);
+        this.setPos(span.offset().left, span.offset().top + 10);
       }
     });
   }
