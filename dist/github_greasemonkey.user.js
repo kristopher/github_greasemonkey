@@ -628,7 +628,7 @@ new Analyze.Repository();
 var RepoInfo = (function() {
   var current,
       current_watched = $('div.repos li b > a').get(),
-      current_feed = $('div.alert.watch_started div.title > a:nth-child(3), div.alert.push div.title > a:nth-child(3), div.alert.member_add div.title > a:nth-child(4), div.alert.member_add div.message > a').get(),
+      current_feed = $('div.alert.watch_started div.title > a:nth-child(3), div.alert.push div.title > a:nth-child(3), div.alert.member_add div.title > a:nth-child(4), div.alert.member_add div.message > a, div.alert.issues_closed div.title > a:nth-child(4)').get(),
       stored = loadStoredWatched(),
       api_path = '/api/v2/json/repos/show/',
       finished_loading = false,
