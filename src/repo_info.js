@@ -2,7 +2,7 @@ var RepoInfo = (function() {
   var current,
       current_watched = $('div.repos li b > a').get(),
       //TODO split up this selector it's getting ridiculous.
-      current_feed = $('div.alert.watch_started div.title > a:nth-child(3), div.alert.push div.title > a:nth-child(3), div.alert.member_add div.title > a:nth-child(4), div.alert.member_add div.message > a, div.alert.issues_closed div.title > a:nth-child(4), div.alert.fork_apply div.title > a:nth-child(3)').get(),
+      current_feed = $('div.alert.watch_started div.title > a:nth-child(3), div.alert.push div.title > a:nth-child(3), div.alert.member_add div.title > a:nth-child(4), div.alert.member_add div.message > a, div.alert.issues_closed div.title > a:nth-child(4), div.alert.issues_opened div.title > a:nth-child(4), div.alert.fork_apply div.title > a:nth-child(3), div.alert.create div.title > a:nth-child(3), div.alert.create div.message a').get(),
       stored = loadStoredWatched(),
       api_path = '/api/v2/json/repos/show/',
       finished_loading = false,
@@ -23,7 +23,7 @@ var RepoInfo = (function() {
   }
   
   function repoIdFromUrl(url) {
-    return url.replace(/(?:^\/|http:\/\/github.com\/)(.*)\/tree(?:.*)?/, '$1');
+    return url.match(/(?:^\/|http:\/\/github.com\/)((.*?)\/(.*?))(?:\/|$)/)[1];
   }
 
   function repoJSONToHTML(repo) {
