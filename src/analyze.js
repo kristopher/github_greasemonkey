@@ -125,7 +125,12 @@ Analyze.Repository.prototype.initialize = function() {
 }
 
 Analyze.Repository.prototype.addLinks = function() {
-  this.repo_buttons.append(this.createButton(this.analyze_profile_path + '/' + this.repo_name).css(this.repo_button_style));    
+  var button = this.createButton(this.analyze_profile_path + '/' + this.repo_name).css(this.repo_button_style);
+  //Linux Hack
+  if(/Linux/.test(unsafeWindow.navigator.userAgent)) {
+    button.children('a').css('padding-top', '0px');
+  }
+  this.repo_buttons.append(button);    
 }
 
 new Analyze.LoggedInProfile();
