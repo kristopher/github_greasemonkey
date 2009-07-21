@@ -123,7 +123,7 @@ Analyze.Repository.prototype.initialize = function() {
   
   this.span_style = $.extend(this.span_style, {
     'display': 'inline-block',
-    'font-size': '1em',
+    'font-size': '19px',
     'vertical-align': '0.01em'
   });
   
