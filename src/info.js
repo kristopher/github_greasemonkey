@@ -37,14 +37,15 @@ var Info = (function() {
     init: init
   }
 
-}).call(unsafeWindow);
+})();
+
+Info.init();
 
 RepoInfo.onFinishedLoading(function() {
   UserInfo.init();
 })  
 
 UserInfo.onFinishedLoading(function() {
-  Info.init();
 })
 
 RepoInfo.init();
