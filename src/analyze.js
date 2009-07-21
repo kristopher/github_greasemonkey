@@ -1,16 +1,18 @@
 var Analyze = function() {
-  this.analyze_base_path = 'http://analyze.github.com';
-  this.button_style = {
-    'padding-top': '2px'
+  this.analyze_base_path = 'http://analyze.github.com';  
+  this.wrapper_style = {};
+  this.span_style = {
+    'background': 'transparent url(/images/modules/repos/pills/middle.png) repeat-x scroll 0 0',
+    'position': 'relative',
+    'padding-right': '3px',
+    'padding-left': '3px'
   };
-  this.button_link_style = {
+  this.link_style = {
     'text-decoration': 'none',
-    'color': '#333',
-    'padding': '3px 3px 2px 3px',
-    'background': 'transparent url(/images/modules/repos/pills/middle.png) repeat-x scroll 0 0'
+    'color': '#333'
   };
-
-  this.link_style = {};
+  this.right_image_style = {};
+  this.left_image_style = {}
 }
 
 Analyze.InstanceMethods = {
@@ -21,16 +23,34 @@ Analyze.InstanceMethods = {
 
   createButton: function(url) {
     url = encodeURI(url);
-    var link = $(document.createElement('a')).attr('href', url).css(this.button_link_style).text('analyze');
-    var span = $(document.createElement('span')).addClass('analyze').css(this.button_style).append(link);
-    span.append('<img src="http://assets1.github.com/images/modules/repos/pills/right.png" alt=""/>');
-    span.prepend('<img src="http://assets3.github.com/images/modules/repos/pills/watchers.png" alt=""/>')
-    return span;
+    var link = $(document.createElement('a'))
+      .attr('href', url)
+      .css(this.link_style)
+      .text('analyze');
+    var span = $(document.createElement('span'))
+      .css(this.span_style)
+      .append(link);
+    var right_image = $(new Image())
+      .attr('src', 'http://assets1.github.com/images/modules/repos/pills/right.png')
+      .css(this.right_image_style);
+    var left_image = $(new Image())
+      .attr('src', 'http://assets3.github.com/images/modules/repos/pills/watchers.png')
+      .css(this.left_image_style);
+    var wrapper = $(document.createElement('span'))
+      .addClass('analyze')
+      .css(this.wrapper_style)
+      .append(left_image)
+      .append(span)
+      .append(right_image);
+    return wrapper;
   },
   
   createLink: function(url) {
     url = encodeURI(url);
-    var link = $(document.createElement('a')).attr('href', url).addClass('analyze').css(this.link_style).text('analyze');
+    var link = $(document.createElement('a'))
+      .attr('href', url)
+      .addClass('analyze')
+      .text('analyze');
     return link;
   },
   
@@ -70,21 +90,12 @@ Analyze.Profile = function() {
 Analyze.Profile.prototype = new Analyze;
 
 Analyze.Profile.prototype.initialize = function() {
-  this.repo_button_style = {
+  this.span_style = $.extend(this.span_style, {
     'display': 'inline-block',
-    'margin': '4px 6px 0 0',
-    'padding': '0',    
-  };
-  this.repo_button_link_style = {
-    'position': 'relative',
-    'bottom': '5px',
-    'padding-top': '0',
-    'display': 'inline-block'
-  }
-  this.button_box_link_style = {
-    'position': 'relative',
-    'bottom': '4px'
-  };
+    'padding-top': '0.06em',
+    'bottom': '0.285em'
+  });
+  
   this.button_box = $('.profile div.buttons');
   if (this.button_box[0]) {
     this.repo_buttons = $('li.project > div:first-child');
@@ -95,7 +106,7 @@ Analyze.Profile.prototype.initialize = function() {
 }
 
 Analyze.Profile.prototype.addLinks = function() {
-  var button = this.createButton(this.analyze_profile_path).children('a').css(this.button_box_link_style).end();
+  var button = this.createButton(this.analyze_profile_path)
   this.button_box.append(button);
 }
 
@@ -106,15 +117,16 @@ Analyze.Repository = function() {
 Analyze.Repository.prototype = new Analyze;
 
 Analyze.Repository.prototype.initialize = function() {
-  this.repo_button_style = {
-    'display': 'inline-block',
-    'height': '18px',
-    'padding': '0',
-    'position': 'relative',
-    'bottom': '1px',
+  this.wrapper_style = $.extend(this.wrapper_style, {
     'margin-left': '4px'
-  };
-
+  });
+  
+  this.span_style = $.extend(this.span_style, {
+    'display': 'inline-block',
+    'font-size': '1em',
+    'vertical-align': '0.01em'
+  });
+  
   this.repo_buttons = $('#repo_details div.title div.path');
   if(this.repo_buttons[0]) {
     this.repo_name = this.repo_buttons.find('b > a').text();
@@ -125,11 +137,7 @@ Analyze.Repository.prototype.initialize = function() {
 }
 
 Analyze.Repository.prototype.addLinks = function() {
-  var button = this.createButton(this.analyze_profile_path + '/' + this.repo_name).css(this.repo_button_style);
-  //Linux Hack
-  if(/Linux/.test(unsafeWindow.navigator.userAgent)) {
-    button.children('a').css('padding-top', '0px');
-  }
+  var button = this.createButton(this.analyze_profile_path + '/' + this.repo_name);
   this.repo_buttons.append(button);    
 }
 
