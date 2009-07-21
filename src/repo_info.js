@@ -1,16 +1,32 @@
 var RepoInfo = (function() {
-  var current,
-      current_watched = $('div.repos li b > a').get(),
-      //TODO split up this selector it's getting ridiculous.
-      current_feed = $('div.alert.watch_started div.title > a:nth-child(3), div.alert.push div.title > a:nth-child(3), div.alert.member_add div.title > a:nth-child(4), div.alert.member_add div.message > a, div.alert.issues_closed div.title > a:nth-child(4), div.alert.issues_opened div.title > a:nth-child(4), div.alert.fork_apply div.title > a:nth-child(3), div.alert.create div.title > a:nth-child(3), div.alert.create div.message a, div.alert.fork div.title > a:nth-child(3)').get(),
-
+  var current, 
+      current_feed = [],
+      watch_alerts = $('div.alert.watch_started div.title > a:nth-child(3)').get(),
+      push_alerts = $('div.alert.push div.title > a:nth-child(3)').get(),
+      member_add_alerts = $('div.alert.member_add div.title > a:nth-child(4), div.alert.member_add div.message > a').get(),
+      issues_opened_alerts = $('div.alert.issues_opened div.title > a:nth-child(4)').get(),
+      issues_closed_alerts = $('div.alert.issues_closed div.title > a:nth-child(4)').get(),
+      fork_apply_alerts = $('div.alert.fork_apply div.title > a:nth-child(3)').get(),
+      repo_fork_alerts = $('div.alert.fork div.title > a:nth-child(3)').get(),
+      repo_create_alerts = $('div.alert.create div.title > a:nth-child(3), div.alert.create div.message a').get(),
+      download_alerts = $('div.alert.download div.message a, div.alert.download div.title > a:nth-child(3)').get(),
       stored = loadStoredWatched(),
       api_path = '/api/v2/json/repos/show/',
       finished_loading = false,
       on_finished_loading = [];
 
   function init() {
-    current = current_watched.concat(current_feed);
+    current = $('div.repos li b > a').get().concat(current_feed);
+    current_feed = current_feed
+      .concat(watch_alerts)
+      .concat(push_alerts) 
+      .concat(member_add_alerts)
+      .concat(issues_opened_alerts)
+      .concat(issues_closed_alerts) 
+      .concat(fork_apply_alerts)
+      .concat(repo_fork_alerts)
+      .concat(repo_create_alerts) 
+      .concat(download_alerts);
     addTooltips();
   }
 
