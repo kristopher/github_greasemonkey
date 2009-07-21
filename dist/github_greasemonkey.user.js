@@ -668,7 +668,6 @@ var RepoInfo = (function() {
       .concat(repo_fork_alerts)
       .concat(repo_create_alerts)
       .concat(download_alerts);
-    console.debug(current_feed);
     addTooltips();
   }
 
