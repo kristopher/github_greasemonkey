@@ -651,6 +651,10 @@ var RepoInfo = (function() {
 
   function init() {
     current = current_watched.concat(current_feed);
+    addTooltips();
+  }
+
+  function update() {
     var repos = [], key
     for(var i = 0; i < current.length; i++) {
       key = repoIdFromUrl($(current[i]).attr('href'));
@@ -658,11 +662,9 @@ var RepoInfo = (function() {
         repos.push(key);
       }
     }
-    addTooltips()
-    addStatusIndicator();
     getAndStoreReposData(repos)
-  }
 
+  }
   function repoIdFromUrl(url) {
     return url.match(/(?:^\/|http:\/\/github.com\/)((.*?)\/(.*?))(?:\/|$)/)[1];
   }
@@ -763,6 +765,7 @@ var RepoInfo = (function() {
   }
 
   function getAndStoreReposData(repos) {
+    addStatusIndicator();
     if (repos.length > 0) {
       this.updated = true;
       getAndStoreRepoData(repos.pop())
@@ -838,6 +841,7 @@ var RepoInfo = (function() {
 
   return {
     init: init,
+    update: update,
     finishedLoading: finishedLoading,
     onFinishedLoading: onFinishedLoading,
     repoIdFromUrl: repoIdFromUrl,
@@ -846,6 +850,8 @@ var RepoInfo = (function() {
   }
 
 })()
+
+RepoInfo.init();
 var UserInfo = (function() {
   var current_users = $('.repos.watching li > a, div.alert div.title > a:first-child, div.alert.member_add div.title > a:nth-child(3), a.committer, div.alert.follow a'),
       stored_users = loadStoredUsers(),
@@ -854,6 +860,10 @@ var UserInfo = (function() {
       on_finished_loading = []
 
   function init() {
+    addTooltips();
+  }
+
+  function update() {
     var users = [], key
     for(var i = 0; i < current_users.length; i++) {
       key = userIdFromUrl($(current_users[i]).attr('href'));
@@ -861,7 +871,6 @@ var UserInfo = (function() {
         users.push(key);
       }
     }
-    addTooltips();
     getAndStoreUsersData(users);
   }
 
@@ -1000,6 +1009,7 @@ var UserInfo = (function() {
 
   return {
     init: init,
+    update: update,
     finishedLoading: finishedLoading,
     onFinishedLoading: onFinishedLoading,
     userIdFromUrl: userIdFromUrl,
@@ -1007,7 +1017,9 @@ var UserInfo = (function() {
     addTooltip: addTooltip
   }
 
-})()
+})();
+
+UserInfo.init();
 var Info = (function() {
   var tooltip_styles = '\
   .tooltip { \n\
@@ -1051,11 +1063,11 @@ var Info = (function() {
 
 Info.init();
 
+RepoInfo.update();
+
 RepoInfo.onFinishedLoading(function() {
-  UserInfo.init();
-})
+  UserInfo.update();
+});
 
 UserInfo.onFinishedLoading(function() {
-})
-
-RepoInfo.init();
+});
