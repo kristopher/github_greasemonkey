@@ -92,8 +92,9 @@ Analyze.Profile.prototype = new Analyze;
 Analyze.Profile.prototype.initialize = function() {
   this.span_style = $.extend(this.span_style, {
     'display': 'inline-block',
-    'padding-top': '0.06em',
-    'bottom': '0.285em'
+    'padding-top': '0',
+    'position': 'none',
+    'vertical-align': '25%'
   });
   
   this.button_box = $('.profile div.buttons');
