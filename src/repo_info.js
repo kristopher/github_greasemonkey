@@ -8,9 +8,13 @@ var RepoInfo = (function() {
       api_path = '/api/v2/json/repos/show/',
       finished_loading = false,
       on_finished_loading = [];
-  
+
   function init() {
     current = current_watched.concat(current_feed);
+    addTooltips();
+  }
+
+  function update() {
     var repos = [], key
     for(var i = 0; i < current.length; i++) {
       key = repoIdFromUrl($(current[i]).attr('href'));
@@ -18,11 +22,9 @@ var RepoInfo = (function() {
         repos.push(key);
       }
     }
-    addTooltips()
-    addStatusIndicator();
     getAndStoreReposData(repos)      
+    
   }
-  
   function repoIdFromUrl(url) {
     return url.match(/(?:^\/|http:\/\/github.com\/)((.*?)\/(.*?))(?:\/|$)/)[1];
   }
@@ -123,6 +125,7 @@ var RepoInfo = (function() {
   }
   
   function getAndStoreReposData(repos) {
+    addStatusIndicator();
     if (repos.length > 0) {
       this.updated = true;
       getAndStoreRepoData(repos.pop())
@@ -198,6 +201,7 @@ var RepoInfo = (function() {
   
   return {
     init: init,
+    update: update,
     finishedLoading: finishedLoading,
     onFinishedLoading: onFinishedLoading,
     repoIdFromUrl: repoIdFromUrl,
@@ -206,3 +210,5 @@ var RepoInfo = (function() {
   }
 
 })()
+
+RepoInfo.init();

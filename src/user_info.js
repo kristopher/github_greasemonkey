@@ -6,6 +6,10 @@ var UserInfo = (function() {
       on_finished_loading = []
 
   function init() {
+    addTooltips();
+  }
+  
+  function update() {
     var users = [], key
     for(var i = 0; i < current_users.length; i++) {
       key = userIdFromUrl($(current_users[i]).attr('href'));
@@ -13,10 +17,9 @@ var UserInfo = (function() {
         users.push(key);
       }
     }
-    addTooltips();
     getAndStoreUsersData(users);
   }
-  
+
   function loadStoredUsers() {
     return JSON.parse(localStorage.getItem('users')  || "{}")
   }
@@ -152,6 +155,7 @@ var UserInfo = (function() {
 
   return {
     init: init,
+    update: update,
     finishedLoading: finishedLoading,
     onFinishedLoading: onFinishedLoading,
     userIdFromUrl: userIdFromUrl,
@@ -159,4 +163,6 @@ var UserInfo = (function() {
     addTooltip: addTooltip
   }
 
-})()
+})();
+
+UserInfo.init();

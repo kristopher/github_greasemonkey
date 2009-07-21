@@ -41,11 +41,11 @@ var Info = (function() {
 
 Info.init();
 
+RepoInfo.update();
+
 RepoInfo.onFinishedLoading(function() {
-  UserInfo.init();
-})  
+  UserInfo.update();
+});  
 
 UserInfo.onFinishedLoading(function() {
-})
-
-RepoInfo.init();
+});
