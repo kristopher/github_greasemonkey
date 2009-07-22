@@ -586,8 +586,9 @@ Analyze.Profile.prototype = new Analyze;
 Analyze.Profile.prototype.initialize = function() {
   this.span_style = $.extend(this.span_style, {
     'display': 'inline-block',
-    'padding-top': '0.06em',
-    'bottom': '0.285em'
+    'padding-top': '0',
+    'position': 'none',
+    'vertical-align': '25%'
   });
 
   this.button_box = $('.profile div.buttons');
@@ -617,7 +618,7 @@ Analyze.Repository.prototype.initialize = function() {
 
   this.span_style = $.extend(this.span_style, {
     'display': 'inline-block',
-    'font-size': '1em',
+    'font-size': '19px',
     'vertical-align': '0.01em'
   });
 
@@ -638,7 +639,6 @@ Analyze.Repository.prototype.addLinks = function() {
 new Analyze.LoggedInProfile();
 new Analyze.Profile();
 new Analyze.Repository();
-try {
 var RepoInfo = (function() {
   var current,
       current_feed = [],
@@ -657,7 +657,6 @@ var RepoInfo = (function() {
       on_finished_loading = [];
 
   function init() {
-    current = $('div.repos li b > a').get().concat(current_feed);
     current_feed = current_feed
       .concat(watch_alerts)
       .concat(push_alerts)
@@ -668,6 +667,8 @@ var RepoInfo = (function() {
       .concat(repo_fork_alerts)
       .concat(repo_create_alerts)
       .concat(download_alerts);
+
+    current = $('div.repos li b > a').get().concat(current_feed);
     addTooltips();
   }
 
@@ -837,22 +838,28 @@ var RepoInfo = (function() {
   }
 
   function addStatusIndicator() {
+    var indicator
     $.each(RepoSearch.instances, function() {
-      var div = $(document.createElement('div'))
-          .addClass('status_indicator')
-          .css('color', '#666')
-          .text('Updating Repository Descriptions...');
-      var image = $(new Image())
-          .attr('src', '/images/modules/ajax/indicator.gif')
-          .css('float', 'right');
-      div.append(image);
-      this.repos.children('.repo_search').before(div);
+      indicator = this.repos.children('div.status_indicator');
+      if (!indicator[0]) {
+        var div = $(document.createElement('div'))
+            .addClass('status_indicator')
+            .css('color', '#666')
+            .text('Updating Repository Descriptions...');
+        var image = $(new Image())
+            .attr('src', '/images/modules/ajax/indicator.gif')
+            .css('float', 'right');
+        div.append(image);
+        this.repos.children('.repo_search').before(div);
+      } else {
+        indicator.show();
+      }
     });
   }
 
   function removeStatusIndicator() {
     $.each(RepoSearch.instances, function() {
-      this.repos.children('div.status_indicator').remove();
+      this.repos.children('div.status_indicator').hide();
     });
   }
 
@@ -867,9 +874,7 @@ var RepoInfo = (function() {
   }
 
 })()
-} catch(e) {
-  console.error(e.message);
-}
+
 RepoInfo.init();
 var UserInfo = (function() {
   var current_users = $('.repos.watching li > a, div.alert div.title > a:first-child, div.alert.member_add div.title > a:nth-child(3), a.committer, div.alert.follow a'),
