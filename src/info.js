@@ -41,11 +41,9 @@ var Info = (function() {
 
 Info.init();
 
-RepoInfo.update();
-
 RepoInfo.onFinishedLoading(function() {
   UserInfo.update();
 });  
 
-UserInfo.onFinishedLoading(function() {
-});
+RepoInfo.update();
+
