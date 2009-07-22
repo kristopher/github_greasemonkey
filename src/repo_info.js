@@ -16,7 +16,6 @@ var RepoInfo = (function() {
       on_finished_loading = [];
 
   function init() {
-    current = $('div.repos li b > a').get().concat(current_feed);
     current_feed = current_feed
       .concat(watch_alerts)
       .concat(push_alerts) 
@@ -27,6 +26,8 @@ var RepoInfo = (function() {
       .concat(repo_fork_alerts)
       .concat(repo_create_alerts) 
       .concat(download_alerts);
+
+    current = $('div.repos li b > a').get().concat(current_feed);
     addTooltips();
   }
 
@@ -196,22 +197,28 @@ var RepoInfo = (function() {
   }
   
   function addStatusIndicator() {
+    var indicator
     $.each(RepoSearch.instances, function() {
-      var div = $(document.createElement('div'))
-          .addClass('status_indicator')
-          .css('color', '#666')
-          .text('Updating Repository Descriptions...');
-      var image = $(new Image())
-          .attr('src', '/images/modules/ajax/indicator.gif')
-          .css('float', 'right');
-      div.append(image);
-      this.repos.children('.repo_search').before(div);
+      indicator = this.repos.children('div.status_indicator');
+      if (!indicator[0]) {
+        var div = $(document.createElement('div'))
+            .addClass('status_indicator')
+            .css('color', '#666')
+            .text('Updating Repository Descriptions...');
+        var image = $(new Image())
+            .attr('src', '/images/modules/ajax/indicator.gif')
+            .css('float', 'right');
+        div.append(image);
+        this.repos.children('.repo_search').before(div);        
+      } else {
+        indicator.show();
+      }
     });
   }
   
   function removeStatusIndicator() {
     $.each(RepoSearch.instances, function() {
-      this.repos.children('div.status_indicator').remove();
+      this.repos.children('div.status_indicator').hide();
     });
   }
   
